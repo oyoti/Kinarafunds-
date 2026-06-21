@@ -572,25 +572,6 @@
     <button class="share-btn" style="background:#25d366;color:#fff;" onclick="shareWhatsApp()">💬 WhatsApp</button>
   </div>
 
-  <!-- Table -->
-  <div class="section-label" style="margin-top:8px;">Your Referrals</div>
-  <div class="table-wrap">
-    <table>
-      <thead>
-        <tr>
-          <th>Referred User</th>
-          <th>Date Joined</th>
-          <th>Challenge</th>
-          <th>Fee Paid</th>
-          <th>Your Commission</th>
-          <th>Status</th>
-        </tr>
-      </thead>
-      <tbody id="referralBody">
-        <tr><td colspan="6" class="empty-state">Loading…</td></tr>
-      </tbody>
-    </table>
-  </div>
 
 </main>
 
@@ -707,57 +688,8 @@
       document.getElementById('statEarned').textContent    = totalEarned > 0 ? fmtMoney(totalEarned) : '0';
       document.getElementById('statPending').textContent   = pendingAmt > 0 ? fmtMoney(pendingAmt) : '0';
 
-      // 4. Fetch referral details from the pre-joined view (for the table below)
-      //    (view already filters to auth.uid() = referrer_user_id)
-      const referrals = await dbGet(
-        `/referral_details?select=*&order=created_at.desc`
-      );
-
-      // 5. Fetch referred users' emails (for display)
-      let emailMap = {};
-      if (referrals.length > 0) {
-        const ids = [...new Set(referrals.map(r => r.referred_user_id).filter(Boolean))];
-        if (ids.length > 0) {
-          const uRows = await dbGet(`/users?id=in.(${ids.join(',')})&select=id,email`);
-          uRows.forEach(u => { emailMap[u.id] = u.email; });
-        }
-      }
-
-      // 6. Render table
-      if (referrals.length === 0) {
-        document.getElementById('referralBody').innerHTML = '<tr><td colspan="6" class="empty-state">No referrals yet. Share your link to start earning!</td></tr>';
-        return;
-      }
-
-      document.getElementById('referralBody').innerHTML = referrals.map(r => {
-        const email     = maskEmail(emailMap[r.referred_user_id] || '');
-        const dateStr   = fmtDate(r.created_at);
-
-        // Build challenge name from tier + size, e.g. "Standard 10K"
-        const tier = r.challenge_tier || '';
-        const size = r.challenge_size || '';
-        let challenge = [tier, size].filter(Boolean).join(' ').trim();
-        if (!challenge) challenge = '—';
-
-        const feeVal    = parseFloat(r.fee_paid) || 0;
-        const commVal   = parseFloat(r.commission) || 0;
-        const fee       = feeVal > 0 ? fmtMoney(feeVal) : '0';
-        const comm      = commVal > 0 ? fmtMoney(commVal) : '0';
-        const isConf    = r.status === 'confirmed';
-        return `
-          <tr>
-            <td>${email}</td>
-            <td style="color:var(--text-muted)">${dateStr}</td>
-            <td>${challenge}</td>
-            <td style="color:var(--text-muted)">${fee}</td>
-            <td style="color:${commVal > 0 ? 'var(--green)' : 'var(--text-muted)'};font-weight:700">${comm}</td>
-            <td><span class="pill ${isConf ? 'pill-green' : 'pill-gold'}">${isConf ? 'Confirmed' : 'Pending'}</span></td>
-          </tr>`;
-      }).join('');
-
     } catch (err) {
       console.error('Referral page error:', err);
-      document.getElementById('referralBody').innerHTML = `<tr><td colspan="6" class="empty-state" style="color:var(--red)">⚠ ${err.message}</td></tr>`;
       showToast('⚠ ' + err.message);
     }
   }
