@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Accounts — KNRA Funded</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="shared.css"/>
+<style>
+.filter-bar{display:flex;gap:0.6rem;margin-bottom:1.8rem;flex-wrap:wrap;}
+.filter-btn{padding:0.45rem 1.1rem;border-radius:20px;border:1.5px solid var(--border);background:var(--white);font-size:0.82rem;font-weight:600;cursor:pointer;transition:0.18s;font-family:'DM Sans',sans-serif;color:var(--mid);}
+.filter-btn:hover{border-color:var(--gold);color:var(--gold);}
+.filter-btn.active{background:var(--charcoal);color:white;border-color:var(--charcoal);}
+.accounts-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:1.4rem;}
+.acc-card{background:var(--white);border:1.5px solid var(--border);border-radius:16px;padding:1.6rem;transition:0.2s;position:relative;overflow:hidden;}
+.acc-card::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;}
+.acc-card.funded::before{background:linear-gradient(90deg,var(--green),#2ecc71);}
+.acc-card.challenge::before{background:linear-gradient(90deg,var(--gold),var(--gold-light));}
+.acc-card.breached::before{background:linear-gradient(90deg,var(--red),#e74c3c);}
+.acc-card:hover{box-shadow:0 6px 24px rgba(0,0,0,0.08);transform:translateY(-2px);}
+.acc-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:1.2rem;}
+.acc-id{font-size:0.75rem;color:var(--light);font-weight:600;letter-spacing:0.5px;}
+.acc-size{font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:700;}
+.acc-badge{padding:3px 10px;border-radius:20px;font-size:0.72rem;font-weight:700;display:inline-flex;align-items:center;gap:5px;}
+.acc-badge svg{width:11px;height:11px;flex-shrink:0;}
+.progress-section{margin-bottom:1.2rem;}
+.progress-row{display:flex;justify-content:space-between;font-size:0.78rem;margin-bottom:0.3rem;}
+.progress-label{color:var(--mid);font-weight:600;}
+.progress-value{color:var(--charcoal);font-weight:700;}
+.progress-bar{height:7px;background:#f0ede8;border-radius:10px;overflow:hidden;margin-bottom:0.8rem;}
+.progress-fill{height:100%;border-radius:10px;transition:width 0.6s ease;}
+.fill-green{background:linear-gradient(90deg,#1a7a4a,#2ecc71);}
+.fill-gold{background:linear-gradient(90deg,var(--gold),var(--gold-light));}
+.fill-red{background:linear-gradient(90deg,var(--red),#e74c3c);}
+.acc-metrics{display:grid;grid-template-columns:1fr 1fr;gap:0.6rem;margin-bottom:1.2rem;}
+.metric{background:var(--off-white);border-radius:8px;padding:0.6rem 0.8rem;text-align:center;}
+.metric .m-val{font-weight:700;font-size:0.9rem;}
+.metric .m-lbl{font-size:0.68rem;color:var(--light);margin-top:2px;}
+.acc-actions{display:flex;gap:0.6rem;flex-wrap:wrap;}
+.acc-btn{flex:1;min-width:80px;padding:0.55rem 0.8rem;border-radius:8px;border:1.5px solid var(--border);background:var(--white);font-size:0.8rem;font-weight:700;cursor:pointer;transition:0.18s;font-family:'DM Sans',sans-serif;color:var(--mid);text-align:center;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;gap:5px;}
+.acc-btn svg{width:13px;height:13px;flex-shrink:0;}
+.acc-btn:hover{border-color:var(--gold);color:var(--gold);}
+.acc-btn.primary{background:var(--charcoal);color:white;border-color:var(--charcoal);}
+.acc-btn.primary:hover{background:var(--gold);border-color:var(--gold);color:black;}
+.acc-btn.trade{background:linear-gradient(135deg,var(--green),#2ecc71);color:white;border-color:var(--green);}
+.acc-btn.trade:hover{background:linear-gradient(135deg,#155d38,#27ae60);border-color:#155d38;color:white;}
+.acc-btn.breached-btn{opacity:0.45;cursor:not-allowed;pointer-events:none;}
+
+/* ── Modal base ── */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:200;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:0.25s;}
+.modal-overlay.open{opacity:1;pointer-events:all;}
+.modal{background:var(--white);border-radius:16px;width:90%;max-width:560px;padding:2rem;position:relative;transform:translateY(20px);transition:0.25s;max-height:90vh;overflow-y:auto;}
+.modal-overlay.open .modal{transform:translateY(0);}
+.modal-close{position:absolute;top:1rem;right:1rem;width:30px;height:30px;border-radius:50%;border:none;background:var(--off-white);cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.modal-close svg{width:14px;height:14px;}
+.modal h2{font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:900;margin-bottom:0.3rem;}
+.modal .m-sub{font-size:0.82rem;color:var(--light);margin-bottom:1.5rem;}
+.detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem;}
+.detail-item .d-label{font-size:0.75rem;color:var(--light);font-weight:600;margin-bottom:0.2rem;}
+.detail-item .d-value{font-size:0.95rem;font-weight:700;}
+.section-divider{height:1px;background:var(--border);margin:1.2rem 0;}
+.modal-actions{display:flex;gap:0.8rem;flex-wrap:wrap;}
+.modal-btn{flex:1;min-width:120px;padding:0.7rem;border-radius:8px;border:1.5px solid var(--border);background:var(--white);font-size:0.85rem;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;color:var(--mid);transition:0.2s;text-decoration:none;text-align:center;display:inline-flex;align-items:center;justify-content:center;gap:6px;}
+.modal-btn svg{width:14px;height:14px;flex-shrink:0;}
+.modal-btn:hover{border-color:var(--gold);color:var(--gold);}
+.modal-btn.dark{background:var(--charcoal);color:white;border-color:var(--charcoal);}
+.modal-btn.dark:hover{background:var(--gold);border-color:var(--gold);color:black;}
+.modal-btn.green{background:linear-gradient(135deg,var(--green),#2ecc71);color:white;border-color:var(--green);}
+.modal-btn.green:hover{background:linear-gradient(135deg,#155d38,#27ae60);border-color:#155d38;}
+
+/* ── Password gate ── */
+.pw-gate{text-align:center;padding:1rem 0 0.5rem;}
+.pw-gate .pw-icon{width:52px;height:52px;border-radius:50%;background:var(--off-white);border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center;margin:0 auto 1rem;}
+.pw-gate .pw-icon svg{width:22px;height:22px;color:var(--mid);}
+.pw-gate h3{font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;margin-bottom:0.3rem;}
+.pw-gate p{font-size:0.82rem;color:var(--light);margin-bottom:1.2rem;}
+.pw-input-wrap{position:relative;margin-bottom:0.5rem;}
+.pw-input-wrap input{width:100%;padding:0.75rem 2.8rem 0.75rem 1rem;border:1.5px solid var(--border);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:0.95rem;outline:none;letter-spacing:3px;transition:border-color 0.2s;}
+.pw-input-wrap input:focus{border-color:var(--gold);}
+.pw-input-wrap input.error{border-color:var(--red);}
+.pw-toggle{position:absolute;right:0.8rem;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--mid);display:flex;align-items:center;}
+.pw-toggle svg{width:16px;height:16px;}
+.pw-error{font-size:0.78rem;color:var(--red);margin-bottom:0.8rem;min-height:18px;}
+.pw-submit{width:100%;padding:0.75rem;background:var(--charcoal);color:white;border:none;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:0.9rem;font-weight:700;cursor:pointer;transition:0.2s;display:flex;align-items:center;justify-content:center;gap:8px;}
+.pw-submit:hover{background:var(--gold);color:black;}
+.pw-submit svg{width:15px;height:15px;}
+.pw-submit:disabled{opacity:0.5;cursor:not-allowed;}
+
+/* ── Credentials reveal ── */
+.cred-box{background:var(--off-white);border:1.5px solid var(--border);border-radius:12px;padding:1.2rem;margin-bottom:1rem;}
+.cred-row{display:flex;justify-content:space-between;align-items:center;padding:0.55rem 0;border-bottom:1px solid var(--border);}
+.cred-row:last-child{border-bottom:none;}
+.cred-label{font-size:0.75rem;color:var(--light);font-weight:600;}
+.cred-val{font-family:'Playfair Display',serif;font-size:1rem;font-weight:700;display:flex;align-items:center;gap:8px;}
+.copy-mini{background:none;border:1px solid var(--border);border-radius:5px;padding:2px 7px;font-size:0.7rem;font-weight:700;cursor:pointer;color:var(--mid);font-family:'DM Sans',sans-serif;transition:0.15s;display:inline-flex;align-items:center;gap:3px;}
+.copy-mini svg{width:10px;height:10px;}
+.copy-mini:hover{border-color:var(--gold);color:var(--gold);}
+.pnl-pos{color:var(--green);}
+.pnl-neg{color:var(--red);}
+.pnl-zero{color:var(--mid);}
+</style>
+</head>
+<body>
+<div class="layout">
+  <aside class="sidebar" id="sidebar"></aside>
+  <main class="main">
+    <div class="topbar">
+      <div class="topbar-title">My Accounts</div>
+      <div id="accountCount" style="font-size:0.85rem;color:var(--mid);"></div>
+    </div>
+    <div class="content">
+      <div class="filter-bar">
+        <button class="filter-btn active" data-filter="all"      onclick="filterAccounts('all',this)">All</button>
+        <button class="filter-btn" data-filter="funded"          onclick="filterAccounts('funded',this)">Funded</button>
+        <button class="filter-btn" data-filter="challenge"       onclick="filterAccounts('challenge',this)">Challenge</button>
+        <button class="filter-btn" data-filter="breached"        onclick="filterAccounts('breached',this)">Breached</button>
+      </div>
+      <div class="accounts-grid" id="accountsGrid">
+        <div class="empty-state" style="grid-column:1/-1;">Loading accounts…</div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModalOutside(event)">
+  <div class="modal" id="modal">
+    <button class="modal-close" onclick="closeModal()">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+    </button>
+    <div id="modalInner"></div>
+  </div>
+</div>
+
+<script src="config.js"></script>
+<script src="sidebar.js"></script>
+<script src="config.js"></script>
+<script src="sidebar.js"></script>
+<script>
+requireAuth();
+renderSidebar('accounts');
+
+const SUPA_URL = 'https://hhkztoklgeozegehcsmc.supabase.co';
+const ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhoa3p0b2tsZ2VvemVnZWhjc21jIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAyMjI1MjEsImV4cCI6MjA5NTc5ODUyMX0.fWs-vU_gIXLNJUh1DA1edrqKh7tc3wv9hjT-ZhhjytY';
+
+async function dbGet(path) {
+  const token = localStorage.getItem('knra_token') || ANON_KEY;
+  const res = await fetch(`${SUPA_URL}/rest/v1${path}`, {
+    headers: { 'apikey': ANON_KEY, 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
+  });
+  if (!res.ok) { const e = await res.json().catch(()=>({})); throw new Error(e.message || `HTTP ${res.status}`); }
+  return res.json();
+}
+
+async function dbPost(path, body) {
+  const token = localStorage.getItem('knra_token') || ANON_KEY;
+  const res = await fetch(`${SUPA_URL}/rest/v1${path}`, {
+    method: 'POST',
+    headers: { 'apikey': ANON_KEY, 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
+    body: JSON.stringify(body)
+  });
+  if (!res.ok) { const e = await res.json().catch(()=>({})); throw new Error(e.message || `HTTP ${res.status}`); }
+  return true;
+}
+
+/* ── SVG library ── */
+const SVG = {
+  funded:   `<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>`,
+  challenge:`<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>`,
+  breached: `<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>`,
+  trade:    `<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"/></svg>`,
+  tradeOff: `<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/></svg>`,
+  details:  `<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>`,
+  tx:       `<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>`,
+  withdraw: `<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/></svg>`,
+  lock:     `<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>`,
+  eye:      `<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>`,
+  eyeOff:   `<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/></svg>`,
+  copy:     `<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3"/></svg>`,
+  send:     `<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>`,
+  check:    `<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>`,
+  cross:    `<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>`,
+  info:     `<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>`,
+};
+
+/* ── Helpers ── */
+function parseSize(sizeStr) {
+  if (!sizeStr) return 0;
+  const s = String(sizeStr).replace(/[$,\s]/g, '').toLowerCase();
+  if (s.endsWith('k')) return parseFloat(s) * 1000;
+  return parseFloat(s) || 0;
+}
+
+function fmtMoney(n) {
+  if (n == null) return '—';
+  const abs = Math.abs(n);
+  const s = '$' + abs.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  return (n < 0 ? '-' : '') + s;
+}
+
+function clamp(v) { return Math.min(100, Math.max(0, v || 0)); }
+
+function badgeClass(status) {
+  const s = (status || '').toLowerCase();
+  if (s.includes('fund')) return 'badge-funded';
+  if (s.includes('breach')) return 'badge-breached';
+  return 'badge-challenge';
+}
+
+function badgeIcon(status) {
+  const s = (status || '').toLowerCase();
+  if (s.includes('fund')) return SVG.funded;
+  if (s.includes('breach')) return SVG.breached;
+  return SVG.challenge;
+}
+
+function badgeLabel(status) {
+  const s = (status || '').toLowerCase();
+  if (s.includes('fund')) return 'Funded';
+  if (s.includes('breach')) return 'Breached';
+  return 'Challenge';
+}
+
+function cardType(status) {
+  const s = (status || '').toLowerCase();
+  if (s.includes('fund')) return 'funded';
+  if (s.includes('breach')) return 'breached';
+  return 'challenge';
+}
+
+/* ── State ── */
+let allAccounts  = [];
+let currentUser  = null;
+
+/* ── Load accounts ── */
+async function loadAccounts() {
+  currentUser = JSON.parse(localStorage.getItem('knra_user') || '{}');
+  if (!currentUser?.id) { window.location.href = 'login.html'; return; }
+
+  try {
+    const accounts = await dbGet(
+      `/accounts?user_id=eq.${currentUser.id}&select=id,account_ref,status,phase,size,start_date,platform,server,login`
+    );
+
+    if (!accounts.length) {
+      document.getElementById('accountsGrid').innerHTML =
+        '<div class="empty-state" style="grid-column:1/-1;">No accounts found.</div>';
+      updateCounts([]);
+      return;
+    }
+
+    const ids = accounts.map(a => a.id).join(',');
+
+    /* Performance — try correct spelling first */
+    let perfs = [];
+    try {
+      perfs = await dbGet(`/account_performance?account_id=in.(${ids})&select=account_id,current_profit,drawdown_used`);
+    } catch (_) {
+      try {
+        perfs = await dbGet(`/account_perfomance?account_id=in.(${ids})&select=account_id,current_profit,drawdown_used`);
+      } catch (e2) {
+        console.warn('Performance table not found:', e2.message);
+      }
+    }
+
+    const perfMap = {};
+    perfs.forEach(p => { perfMap[p.account_id] = p; });
+
+    allAccounts = accounts.map(acc => {
+      const sizeNum       = parseSize(acc.size);
+      const profitTarget  = sizeNum * 0.50;
+      const drawdownLimit = sizeNum * 0.30;
+      const perf          = perfMap[acc.id] || {};
+
+      /* current_profit is a dollar amount (can be negative for a loss).
+         drawdown_used is stored as a PERCENTAGE (e.g. 12.18 = 12.18%),
+         not a dollar amount — convert it to dollars for display. */
+      const currentProfit   = parseFloat(perf.current_profit) || 0;
+      const drawdownUsedPct = parseFloat(perf.drawdown_used)  || 0;
+      const drawdownUsed    = sizeNum * (Math.abs(drawdownUsedPct) / 100);
+
+      /* Bar fill: profit compares dollars to the dollar target; drawdown
+         compares the raw percentage to the 30% limit directly. */
+      const profitPct   = clamp((Math.max(currentProfit, 0) / profitTarget) * 100);
+      const drawdownPct = clamp((Math.abs(drawdownUsedPct)  / 30) * 100);
+
+      return { ...acc, sizeNum, currentProfit, drawdownUsed, profitTarget, drawdownLimit, profitPct, drawdownPct, cardType: cardType(acc.status) };
+    });
+
+    renderAccounts(allAccounts);
+    updateCounts(allAccounts);
+
+  } catch (err) {
+    document.getElementById('accountsGrid').innerHTML =
+      `<div class="empty-state" style="grid-column:1/-1;">Could not load accounts: ${err.message}</div>`;
+  }
+}
+
+function updateCounts(list) {
+  const n = t => list.filter(a => a.cardType === t).length;
+  document.querySelector('[data-filter="all"]').textContent       = `All (${list.length})`;
+  document.querySelector('[data-filter="funded"]').textContent    = `Funded (${n('funded')})`;
+  document.querySelector('[data-filter="challenge"]').textContent = `Challenge (${n('challenge')})`;
+  document.querySelector('[data-filter="breached"]').textContent  = `Breached (${n('breached')})`;
+  document.getElementById('accountCount').textContent =
+    `${list.length} account${list.length !== 1 ? 's' : ''} found`;
+}
+
+function renderAccounts(list) {
+  if (!list.length) {
+    document.getElementById('accountsGrid').innerHTML =
+      '<div class="empty-state" style="grid-column:1/-1;">No accounts match this filter.</div>';
+    return;
+  }
+
+  document.getElementById('accountsGrid').innerHTML = list.map(a => {
+    const isBreached   = a.cardType === 'breached';
+    const profitColor  = a.currentProfit > 0 ? 'var(--green)' : a.currentProfit < 0 ? 'var(--red)' : 'var(--mid)';
+    const ddFill       = a.drawdownPct > 70 ? 'fill-red' : 'fill-gold';
+    const profitBar    = a.profitPct  > 0 ? `<div class="progress-fill fill-green" style="width:${a.profitPct}%"></div>`  : '';
+    const drawdownBar  = a.drawdownPct > 0 ? `<div class="progress-fill ${ddFill}"  style="width:${a.drawdownPct}%"></div>` : '';
+
+    const tradeBtn = isBreached
+      ? `<button class="acc-btn trade breached-btn">${SVG.tradeOff} Trade</button>`
+      : `<button class="acc-btn trade" onclick="openTradeLogin(${a.id})">${SVG.trade} Trade</button>`;
+
+    /* Withdrawal button — always rendered; enabled/disabled decided in modal after eligibility check */
+    const withdrawBtn = `<button class="acc-btn withdraw-card-btn" onclick="openModal(${a.id})" style="opacity:0.45;cursor:default;" disabled>${SVG.withdraw} Withdraw</button>`;
+
+    return `
+    <div class="acc-card ${a.cardType}" data-type="${a.cardType}" id="card-${a.id}">
+      <div class="acc-top">
+        <div>
+          <div class="acc-id">${a.account_ref || a.id}</div>
+          <div class="acc-size">${a.size || '—'}</div>
+        </div>
+        <span class="acc-badge ${badgeClass(a.status)}">${badgeIcon(a.status)} ${badgeLabel(a.status)}</span>
+      </div>
+
+      <div class="progress-section">
+        <div class="progress-row">
+          <span class="progress-label">Profit Target (50%)</span>
+          <span class="progress-value" style="color:${profitColor}">${fmtMoney(a.currentProfit)} / ${fmtMoney(a.profitTarget)}</span>
+        </div>
+        <div class="progress-bar">${profitBar}</div>
+        <div class="progress-row">
+          <span class="progress-label">Max Drawdown (30%)</span>
+          <span class="progress-value">${fmtMoney(a.drawdownUsed)} / ${fmtMoney(a.drawdownLimit)}</span>
+        </div>
+        <div class="progress-bar">${drawdownBar}</div>
+      </div>
+
+      <div class="acc-metrics">
+        <div class="metric">
+          <div class="m-val" style="color:${profitColor}">${a.currentProfit >= 0 ? '+' : ''}${fmtMoney(a.currentProfit)}</div>
+          <div class="m-lbl">Current Profit</div>
+        </div>
+        <div class="metric">
+          <div class="m-val">${a.profitPct.toFixed(1)}%</div>
+          <div class="m-lbl">Target Progress</div>
+        </div>
+      </div>
+
+      <div class="acc-actions">
+        <button class="acc-btn primary" onclick="openModal(${a.id})">${SVG.details} Details</button>
+        ${tradeBtn}
+        <a href="transactions.html?acc=${encodeURIComponent(a.id)}" class="acc-btn">${SVG.tx} Transactions</a>
+        ${withdrawBtn}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+/* ── Filter ── */
+function filterAccounts(type, btn) {
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderAccounts(type === 'all' ? allAccounts : allAccounts.filter(a => a.cardType === type));
+}
+
+/* ── Trade ── */
+function openTradeLogin(accountId) {
+  const a = allAccounts.find(x => x.id == accountId);
+  if (!a) return;
+  sessionStorage.setItem('knra_trade_account', JSON.stringify({
+    id: a.id, ref: a.account_ref || a.id, login: a.login || '', size: a.size, phase: a.phase, status: a.status
+  }));
+  window.location.href = 'knra2.html';
+}
+
+/* ════════════════════════════════════════
+   MODAL
+════════════════════════════════════════ */
+let currentModalAccount = null;
+let withdrawEligible    = false;
+
+function openModal(accountId) {
+  /* FIX: use == (loose) so number 34 matches string "34" and vice versa */
+  currentModalAccount = allAccounts.find(a => a.id == accountId);
+  if (!currentModalAccount) { console.error('Account not found:', accountId); return; }
+  withdrawEligible = false;
+  document.getElementById('modalOverlay').classList.add('open');
+  renderPasswordGate();
+}
+
+function closeModal() {
+  document.getElementById('modalOverlay').classList.remove('open');
+  pwRevealed = false;
+}
+
+function closeModalOutside(e) { if (e.target.id === 'modalOverlay') closeModal(); }
+
+/* ── Step 1: Password gate ── */
+function renderPasswordGate() {
+  const acc = currentModalAccount;
+  document.getElementById('modalInner').innerHTML = `
+    <div class="pw-gate">
+      <div class="pw-icon">${SVG.lock}</div>
+      <h3>Verify Your Identity</h3>
+      <p>Enter your password to view credentials for<br>
+         <strong>${acc.account_ref || acc.id} — ${acc.size || ''}</strong></p>
+    </div>
+    <div class="pw-input-wrap">
+      <input type="password" id="pwInput" placeholder="Enter your password" autocomplete="current-password" oninput="clearPwError()"/>
+      <button class="pw-toggle" onclick="togglePw()" id="pwToggle">${SVG.eye}</button>
+    </div>
+    <div class="pw-error" id="pwError"></div>
+    <button class="pw-submit" id="pwSubmit" onclick="verifyPassword()">
+      ${SVG.send} View Account Credentials
+    </button>`;
+
+  setTimeout(() => {
+    const inp = document.getElementById('pwInput');
+    if (inp) { inp.focus(); inp.onkeydown = e => { if (e.key === 'Enter') verifyPassword(); }; }
+  }, 50);
+}
+
+function togglePw() {
+  const inp = document.getElementById('pwInput');
+  const btn = document.getElementById('pwToggle');
+  inp.type = inp.type === 'password' ? 'text' : 'password';
+  btn.innerHTML = inp.type === 'text' ? SVG.eyeOff : SVG.eye;
+}
+
+function clearPwError() {
+  const e = document.getElementById('pwError');
+  const i = document.getElementById('pwInput');
+  if (e) e.textContent = '';
+  if (i) i.classList.remove('error');
+}
+
+async function verifyPassword() {
+  const pw  = (document.getElementById('pwInput').value || '').trim();
+  const btn = document.getElementById('pwSubmit');
+  const err = document.getElementById('pwError');
+  if (!pw) { err.textContent = 'Please enter your password.'; return; }
+
+  btn.disabled = true;
+  btn.innerHTML = `<svg style="width:15px;height:15px;animation:spin 1s linear infinite" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg> Verifying…`;
+
+  try {
+    /* Verify via Supabase auth — checks auth.users password without exposing it via REST */
+    const email = currentUser.email;
+    if (!email) throw new Error('No email in session. Please re-login.');
+
+    const res = await fetch(`${SUPA_URL}/auth/v1/token?grant_type=password`, {
+      method: 'POST',
+      headers: { 'apikey': ANON_KEY, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password: pw })
+    });
+    const data = await res.json();
+
+    if (!res.ok || data.error) {
+      document.getElementById('pwInput').classList.add('error');
+      err.textContent = 'Incorrect password. Please try again.';
+      btn.disabled = false;
+      btn.innerHTML = `${SVG.send} View Account Credentials`;
+      return;
+    }
+    await loadCredentialsAndEligibility();
+  } catch (e) {
+    err.textContent = 'Error: ' + e.message;
+    btn.disabled = false;
+    btn.innerHTML = `${SVG.send} View Account Credentials`;
+  }
+}
+
+/* ── Step 2: Load credentials + run eligibility checks ── */
+async function loadCredentialsAndEligibility() {
+  const acc = currentModalAccount;
+
+  document.getElementById('modalInner').innerHTML = `
+    <h2 style="font-family:'Playfair Display',serif;font-size:1.2rem;font-weight:900;margin-bottom:0.2rem;">
+      ${acc.account_ref || acc.id}
+    </h2>
+    <div style="font-size:0.82rem;color:var(--light);margin-bottom:1.2rem;">
+      ${acc.phase || ''} · ${acc.size || ''} · ${acc.status || ''}
+    </div>
+    <div id="credLoading" class="empty-state">Loading credentials…</div>
+    <div id="credContent" style="display:none;"></div>`;
+
+  try {
+    /* Fetch credentials and trade history in parallel */
+    const [credsArr, tradesArr] = await Promise.all([
+      dbGet(`/account_credentials?account_id=eq.${acc.id}&select=login_number,login_password,profit_loss`),
+      dbGet(`/trades?account_id=eq.${acc.id}&select=id,profit,trade_date&order=trade_date.asc`)
+        .catch(() => [])  /* trades table may not exist yet — degrade gracefully */
+    ]);
+
+    const c   = credsArr[0] || {};
+    const pnl = parseFloat(c.profit_loss) || 0;
+    const pnlClass = pnl > 0 ? 'pnl-pos' : pnl < 0 ? 'pnl-neg' : 'pnl-zero';
+    const pnlSign  = pnl >= 0 ? '+' : '';
+
+    /* ── Eligibility checks (backend data, computed client-side, never shown raw) ── */
+    const eligibility = checkWithdrawalEligibility(tradesArr, acc);
+    withdrawEligible  = eligibility.allPassed;
+
+    /* Build check rows — visible to user only as pass/fail, no raw numbers */
+    const checkRows = eligibility.checks.map(c => `
+      <div class="elig-row">
+        <span class="elig-icon ${c.pass ? 'elig-pass' : 'elig-fail'}">${c.pass ? SVG.check : SVG.cross}</span>
+        <span class="elig-label">${c.label}</span>
+        <span class="elig-status ${c.pass ? 'elig-pass' : 'elig-fail'}">${c.pass ? 'Met' : 'Not met'}</span>
+      </div>`).join('');
+
+    /* Withdrawal button state */
+    const wdBtn = withdrawEligible
+      ? '<button class="modal-btn withdraw-active" onclick="initiateWithdrawal()"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width:14px;height:14px"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/></svg> Request Withdrawal</button>'
+      : '<button class="modal-btn withdraw-locked" onclick="showWithdrawBlocked()"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width:14px;height:14px"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/></svg> Withdrawal</button>';
+
+    document.getElementById('credContent').innerHTML = `
+      <!-- Credentials -->
+      <div class="cred-box">
+        <div class="cred-row">
+          <span class="cred-label">Login Number</span>
+          <span class="cred-val">
+            <span id="loginNum">${c.login_number || '—'}</span>
+            <button class="copy-mini" onclick="copyText('${c.login_number || ''}')">${SVG.copy} Copy</button>
+          </span>
+        </div>
+        <div class="cred-row">
+          <span class="cred-label">Login Password</span>
+          <span class="cred-val">
+            <span id="pwDisplay" style="letter-spacing:3px;">••••••••</span>
+            <button class="copy-mini" id="revealBtn" onclick="revealPw('${c.login_password || ''}')">${SVG.eye} Show</button>
+            <button class="copy-mini" onclick="copyText('${c.login_password || ''}')">${SVG.copy} Copy</button>
+          </span>
+        </div>
+        <div class="cred-row">
+          <span class="cred-label">Profit / Loss</span>
+          <span class="cred-val ${pnlClass}">${pnlSign}${fmtMoney(pnl)}</span>
+        </div>
+      </div>
+
+      <div class="section-divider"></div>
+
+      <!-- Withdrawal eligibility checklist -->
+      <div style="font-family:'Playfair Display',serif;font-size:0.95rem;font-weight:700;margin-bottom:0.8rem;">
+        Withdrawal Eligibility
+      </div>
+      <div class="elig-list">${checkRows}</div>
+
+      <div class="section-divider"></div>
+
+      <!-- Actions -->
+      <div class="modal-actions" id="modalActions">
+        <a href="transactions.html?acc=${encodeURIComponent(acc.id)}" class="modal-btn dark">
+          ${SVG.tx} Transactions
+        </a>
+        ${acc.cardType !== 'breached'
+          ? `<button class="modal-btn green" onclick="closeModal();openTradeLogin(${acc.id})">${SVG.trade} Trade</button>`
+          : ''}
+        ${wdBtn}
+      </div>`;
+
+    document.getElementById('credLoading').style.display = 'none';
+    document.getElementById('credContent').style.display = 'block';
+
+  } catch (e) {
+    document.getElementById('credLoading').textContent = 'Error: ' + e.message;
+  }
+}
+
+/* ════════════════════════════════════════
+   ELIGIBILITY — all logic stays in JS,
+   raw numbers never rendered in the DOM
+════════════════════════════════════════ */
+function checkWithdrawalEligibility(trades, acc) {
+  /* 1. Minimum 10 trading days */
+  const tradingDays = new Set(
+    trades.map(t => (t.trade_date || '').slice(0, 10))
+  ).size;
+  const has10Days = tradingDays >= 10;
+
+  /* 2. Minimum 5 profitable trading days */
+  const profitByDay = {};
+  trades.forEach(t => {
+    const day = (t.trade_date || '').slice(0, 10);
+    profitByDay[day] = (profitByDay[day] || 0) + (parseFloat(t.profit) || 0);
+  });
+  const profitableDays = Object.values(profitByDay).filter(p => p > 0).length;
+  const has5ProfitDays = profitableDays >= 5;
+
+  /* 3. 60% consistency rule:
+        No single day's profit > 60% of total profit */
+  const totalProfit = Object.values(profitByDay).reduce((s, v) => s + v, 0);
+  let consistencyOk = true;
+  if (totalProfit > 0) {
+    const maxDayProfit = Math.max(...Object.values(profitByDay).map(v => Math.max(v, 0)));
+    consistencyOk = maxDayProfit / totalProfit <= 0.60;
+  }
+
+  /* 4. Profit target reached (50% of account size) */
+  const targetReached = acc.currentProfit >= acc.profitTarget;
+
+  const checks = [
+    { label: 'Minimum 10 trading days',         pass: has10Days       },
+    { label: 'Minimum 5 profitable days',        pass: has5ProfitDays  },
+    { label: '60% consistency rule',             pass: consistencyOk   },
+    { label: 'Profit target reached (50%)',      pass: targetReached   },
+  ];
+
+  return { checks, allPassed: checks.every(c => c.pass) };
+}
+
+/* ════════════════════════════════════════
+   WITHDRAWAL REQUEST
+   — stores in DB + notifies admin via
+     Supabase Edge Function (email sent
+     server-side, never exposed to user)
+════════════════════════════════════════ */
+async function initiateWithdrawal() {
+  if (!withdrawEligible) return;
+
+  const btn = document.querySelector('.withdraw-active');
+  if (btn) { btn.disabled = true; btn.innerHTML = `<svg style="width:14px;height:14px;animation:spin 1s linear infinite" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg> Submitting…`; }
+
+  try {
+    const acc = currentModalAccount;
+
+    /* 1. Write withdrawal request row to DB (admin sees this) */
+    await dbPost('/withdrawal_requests', {
+      user_id:    currentUser.id,
+      account_id: acc.id,
+      amount:     acc.currentProfit,
+      status:     'pending',
+      requested_at: new Date().toISOString()
+    });
+
+    /* 2. Trigger admin email via Supabase Edge Function
+          The function runs server-side — user never sees the email address */
+    await fetch(`${SUPA_URL}/functions/v1/notify-withdrawal`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${ANON_KEY}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ user_id: currentUser.id, account_id: acc.id })
+    }).catch(e => console.warn('Email notify failed (non-critical):', e.message));
+
+    /* 3. Show success to user */
+    document.getElementById('modalActions').innerHTML = `
+      <div style="display:flex;align-items:center;gap:10px;padding:0.8rem 1rem;background:var(--off-white);border:1.5px solid var(--green);border-radius:10px;color:var(--green);font-weight:700;font-size:0.85rem;width:100%;">
+        ${SVG.check}
+        Withdrawal request submitted. You will be notified once processed.
+      </div>`;
+
+  } catch (e) {
+    document.getElementById('modalActions').innerHTML += `
+      <div style="color:var(--red);font-size:0.8rem;margin-top:0.5rem;">Error: ${e.message}</div>`;
+    if (btn) { btn.disabled = false; btn.innerHTML = `${SVG.withdraw} Request Withdrawal`; }
+  }
+}
+
+/* ── Withdrawal blocked message ── */
+function showWithdrawBlocked() {
+  var old = document.getElementById('withdrawBlockedMsg');
+  if (old) old.remove();
+
+  var msg = document.createElement('div');
+  msg.id = 'withdrawBlockedMsg';
+  msg.innerHTML = '<strong>Withdrawal conditions not met.</strong> Complete all requirements listed above to unlock withdrawal.';
+  msg.style.cssText = 'margin-top:12px;padding:12px 14px;background:#fff0f0;border:2px solid #e05252;border-radius:10px;color:#e05252;font-size:0.83rem;line-height:1.5;';
+
+  var credContent = document.getElementById('credContent');
+  if (credContent) {
+    credContent.appendChild(msg);
+    msg.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  setTimeout(function() { if (msg.parentNode) msg.remove(); }, 5000);
+}
+
+/* ── Password reveal ── */
+let pwRevealed = false;
+function revealPw(pw) {
+  pwRevealed = !pwRevealed;
+  document.getElementById('pwDisplay').textContent = pwRevealed ? pw : '••••••••';
+  document.getElementById('revealBtn').innerHTML   = pwRevealed ? `${SVG.eyeOff} Hide` : `${SVG.eye} Show`;
+}
+
+function copyText(val) {
+  if (!val) return;
+  navigator.clipboard.writeText(val);
+}
+
+loadAccounts();
+</script>
+<style>
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── Eligibility list ── */
+.elig-list { display:flex; flex-direction:column; gap:0.5rem; margin-bottom:0.5rem; }
+.elig-row  { display:flex; align-items:center; gap:10px; padding:0.55rem 0.8rem; background:var(--off-white); border-radius:8px; }
+.elig-icon { display:flex; align-items:center; flex-shrink:0; }
+.elig-icon svg { width:15px; height:15px; }
+.elig-label  { flex:1; font-size:0.82rem; font-weight:500; }
+.elig-status { font-size:0.75rem; font-weight:700; }
+.elig-pass   { color:var(--green); }
+.elig-fail   { color:var(--red); }
+
+/* ── Withdrawal locked button ── */
+.modal-btn.withdraw-locked {
+  opacity: 0.5;
+  cursor: pointer;
+  border-style: dashed;
+}
+.modal-btn.withdraw-locked:hover {
+  border-color: var(--red);
+  color: var(--red);
+  opacity: 0.8;
+}
+
+/* ── Withdrawal active button ── */
+.modal-btn.withdraw-active {
+  background: var(--charcoal);
+  color: white;
+  border-color: var(--charcoal);
+}
+.modal-btn.withdraw-active:hover {
+  background: var(--gold);
+  border-color: var(--gold);
+  color: black;
+}
+</style>
+</body>
+</html>

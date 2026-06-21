@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KNRA 1 — Over/Under</title>
+<style>
+:root[data-theme="dark"]{
+  --bg:#0f1117;--bg2:#161b27;--bg3:#1e293b;
+  --border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.13);
+  --text:#e2e8f0;--text2:#94a3b8;--text3:#64748b;
+  --input-bg:#0f1117;
+  --active-bg:#1e3a5f;--active-br:#378ADD;--active-tx:#7ec8ff;
+  --over-bg:rgba(34,197,94,0.08);--over-br:rgba(34,197,94,0.22);
+  --under-bg:rgba(239,68,68,0.08);--under-br:rgba(239,68,68,0.22);
+  --trade-bg:rgba(55,138,221,0.1);--trade-br:rgba(55,138,221,0.22);
+  --chart-fill-top:rgba(24,95,165,0.22);--chart-fill-bot:rgba(24,95,165,0.01);
+  --grid-line:rgba(255,255,255,0.05);--label-col:rgba(148,163,184,0.55);
+  --price-line:#ffffff;
+  --sq-bg:#1e293b;--sq-border:rgba(255,255,255,0.12);
+}
+:root[data-theme="light"]{
+  --bg:#f8fafc;--bg2:#ffffff;--bg3:#f1f5f9;
+  --border:rgba(0,0,0,0.07);--border2:rgba(0,0,0,0.14);
+  --text:#0f172a;--text2:#475569;--text3:#94a3b8;
+  --input-bg:#f8fafc;
+  --active-bg:#dbeafe;--active-br:#2563eb;--active-tx:#1d4ed8;
+  --over-bg:rgba(22,163,74,0.08);--over-br:rgba(22,163,74,0.22);
+  --under-bg:rgba(220,38,38,0.08);--under-br:rgba(220,38,38,0.22);
+  --trade-bg:rgba(37,99,235,0.07);--trade-br:rgba(37,99,235,0.2);
+  --chart-fill-top:rgba(37,99,235,0.15);--chart-fill-bot:rgba(37,99,235,0.01);
+  --grid-line:rgba(0,0,0,0.05);--label-col:rgba(71,85,105,0.7);
+  --price-line:#111827;
+  --sq-bg:#f1f5f9;--sq-border:rgba(0,0,0,0.12);
+}
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);transition:background .2s,color .2s}
+.dash{display:flex;flex-direction:column;height:100vh}
+
+/* Offline */
+.offline-banner{display:none;background:rgba(239,68,68,.12);border-bottom:1px solid rgba(239,68,68,.25);padding:5px 16px;font-size:11px;font-weight:600;color:#dc2626;text-align:center}
+.offline-banner.show{display:block}
+
+/* Topbar */
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:9px 16px;background:var(--bg2);border-bottom:1px solid var(--border);flex-shrink:0;gap:8px;flex-wrap:wrap}
+.sym-left{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.sym-badge{font-size:13px;font-weight:600;color:var(--text);padding:4px 11px;border:1px solid var(--border2);border-radius:6px}
+.tt-badge{font-size:10px;font-weight:700;color:var(--text2);padding:3px 8px;border:1px solid var(--border);border-radius:6px;text-transform:uppercase;letter-spacing:.05em}
+.live-dot{width:7px;height:7px;border-radius:50%;background:#22c55e;animation:pulse 1.2s infinite;display:inline-block}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.price-main{font-size:19px;font-weight:600;color:var(--text);font-variant-numeric:tabular-nums}
+.price-change{font-size:12px;font-weight:500;font-variant-numeric:tabular-nums}
+.mkt-select{font-size:12px;font-weight:600;padding:5px 10px;border:1px solid var(--border2);border-radius:6px;background:var(--bg2);color:var(--text);cursor:pointer;outline:none}
+.theme-btn{background:none;border:1px solid var(--border2);border-radius:6px;padding:5px 10px;cursor:pointer;font-size:13px;color:var(--text);transition:background .15s}
+.theme-btn:hover{background:var(--bg3)}
+
+/* Layout */
+.main-area{display:flex;flex:1;overflow:hidden;min-height:0}
+
+/* Chart column */
+.chart-col{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
+.chart-area{flex:1;position:relative;padding:10px 10px 4px;background:var(--bg);min-height:0}
+.chart-wrap{position:relative;width:100%;height:100%}
+canvas#tickChart{width:100%;height:100%;display:block}
+
+/* ── Digit bar ──────────────────────────────────────────────────── */
+.digit-bar{
+  display:grid;
+  grid-template-columns:repeat(10,1fr);
+  gap:5px;
+  padding:8px 10px;
+  background:var(--bg2);
+  border-top:1px solid var(--border);
+  flex-shrink:0;
+  height:96px;
+}
+
+/* Each digit card */
+.dq{
+  background:#1e293b;
+  border:2px solid #334155;
+  border-radius:10px;
+  padding:6px 3px;
+  text-align:center;
+  cursor:pointer;
+  position:relative;
+  overflow:hidden;
+  transition:border-color .25s, background .25s, transform .15s, box-shadow .25s;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:2px;
+}
+.dq:hover{ border-color:#475569; transform:translateY(-1px); }
+
+/* Circle containing the digit number */
+.dq-circle{
+  width:30px;
+  height:30px;
+  border-radius:50%;
+  background:#0f172a;
+  border:2px solid #334155;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:13px;
+  font-weight:700;
+  color:#cbd5e1;
+  position:relative;
+  z-index:2;
+  transition:all .25s;
+  flex-shrink:0;
+}
+.dq-pct{
+  font-size:9px;
+  color:#cbd5e1;
+  position:relative;
+  z-index:2;
+  font-variant-numeric:tabular-nums;
+  line-height:1;
+}
+.dq-count{
+  font-size:8px;
+  color:#94a3b8;
+  position:relative;
+  z-index:2;
+  font-variant-numeric:tabular-nums;
+  line-height:1;
+}
+
+/* Active (selected barrier) — silver/slate */
+.dq.active{
+  background:#444e59c7;
+  border-color:#7c8085;
+  transform:scale(1.07);
+  box-shadow:0 0 10px #232629aa;
+}
+.dq.active .dq-circle{
+  border-color:#f1f5f9;
+  box-shadow:0 0 6px #f1f5f9aa;
+  color:#f1f5f9;
+  background:#334155;
+}
+.dq.active .dq-pct{ color:#f1f5f9; }
+.dq.active .dq-count{ color:#94a3b8; }
+
+/* Highest count — gold glow */
+.dq.highest .dq-circle{
+  border-color:#facc15;
+  box-shadow:0 0 8px #facc15aa;
+  color:#fef08a;
+  background:#2a2200;
+}
+.dq.highest .dq-pct{ color:#fde68a; }
+
+/* Lowest count — red glow */
+.dq.lowest .dq-circle{
+  border-color:#f50c0c;
+  box-shadow:0 0 8px #c91010aa;
+  color:#b11717;
+  background:#2a0000;
+}
+.dq.lowest .dq-pct{ color:#b31b1b; }
+
+/* Last-hit flash — green travels with the appearing digit */
+.dq.last-hit{
+  background:#14532d;
+  border-color:#22c55e;
+  box-shadow:0 0 10px #22c55e88;
+}
+.dq.last-hit .dq-circle{
+  border-color:#22c55e;
+  box-shadow:0 0 8px #22c55eaa;
+  color:#bbf7d0;
+  background:#166534;
+}
+.dq.last-hit .dq-pct{ color:#86efac; }
+
+/* Light theme overrides for digit bar */
+:root[data-theme="light"] .dq{ background:#f1f5f9; border-color:#cbd5e1; }
+:root[data-theme="light"] .dq-circle{ background:#e2e8f0; border-color:#cbd5e1; color:#334155; }
+:root[data-theme="light"] .dq.active{ background:#e2e8f0; border-color:#94a3b8; box-shadow:0 0 8px #94a3b888; }
+:root[data-theme="light"] .dq.active .dq-circle{ background:#cbd5e1; color:#1e293b; border-color:#64748b; box-shadow:none; }
+:root[data-theme="light"] .dq.active .dq-pct{ color:#1e293b; }
+:root[data-theme="light"] .dq.last-hit{ background:#dcfce7; border-color:#22c55e; box-shadow:0 0 8px #22c55e66; }
+:root[data-theme="light"] .dq.last-hit .dq-circle{ background:#bbf7d0; border-color:#16a34a; color:#14532d; }
+:root[data-theme="light"] .dq.highest .dq-circle{ background:#fefce8; }
+:root[data-theme="light"] .dq.lowest .dq-circle{ background:#fef2f2; }
+
+/* Panel */
+.panel{width:238px;border-left:1px solid var(--border);background:var(--bg2);display:flex;flex-direction:column;padding:14px 13px 12px;gap:11px;overflow-y:auto;flex-shrink:0}
+.panel-title{font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.07em}
+.field-label{font-size:11px;color:var(--text3);margin-bottom:4px}
+
+/* Ticks */
+.ticks-opts{display:flex;gap:5px;flex-wrap:wrap}
+.t-btn{font-size:11px;font-weight:500;padding:5px 9px;border:1px solid var(--border2);border-radius:6px;cursor:pointer;background:transparent;color:var(--text2);transition:all .12s}
+.t-btn:hover{color:var(--text)}
+.t-btn.active{background:var(--active-br);border-color:var(--active-br);color:#fff}
+.t-btn:disabled{opacity:.35;cursor:not-allowed}
+
+/* Stake */
+.input-row{display:flex;align-items:center;border:1px solid var(--border2);border-radius:6px;background:var(--input-bg);overflow:hidden}
+.input-row input{flex:1;border:none;background:transparent;font-size:13px;font-weight:500;color:var(--text);padding:7px 8px;outline:none;width:0}
+.input-adj{width:30px;height:34px;border:none;background:transparent;cursor:pointer;font-size:18px;color:var(--text3);display:flex;align-items:center;justify-content:center;transition:background .1s}
+.input-adj:hover{background:var(--bg3);color:var(--text)}
+
+.divider{height:1px;background:var(--border);flex-shrink:0}
+
+/* Stats */
+.stat-row{display:flex;justify-content:space-between;align-items:center}
+.stat-label{font-size:11px;color:var(--text3)}
+.stat-val{font-size:12px;font-weight:500;color:var(--text);font-variant-numeric:tabular-nums}
+
+/* Payouts */
+.payout-row{display:flex;gap:6px}
+.payout-box{flex:1;border-radius:6px;padding:8px;text-align:center;border:1px solid}
+.payout-box.over{background:var(--over-bg);border-color:var(--over-br)}
+.payout-box.under{background:var(--under-bg);border-color:var(--under-br)}
+.pb-label{font-size:10px;font-weight:700;letter-spacing:.04em;margin-bottom:3px}
+.payout-box.over .pb-label{color:#16a34a}
+.payout-box.under .pb-label{color:#dc2626}
+.pb-val{font-size:13px;font-weight:600}
+.payout-box.over .pb-val{color:#22c55e}
+.payout-box.under .pb-val{color:#ef4444}
+
+/* Last digit big display */
+.last-digit-display{display:flex;align-items:center;justify-content:center;gap:8px;padding:8px;border-radius:8px;background:var(--bg3);border:1px solid var(--border)}
+.ld-val{font-size:28px;font-weight:700;font-variant-numeric:tabular-nums;min-width:32px;text-align:center;transition:color .15s}
+
+/* Active trade */
+.active-trade-info{padding:8px 10px;border-radius:6px;background:var(--trade-bg);border:1px solid var(--trade-br);display:none}
+.active-trade-info.show{display:block}
+.ati-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:2px}
+.ati-label{font-size:10px;color:var(--text3)}
+.ati-val{font-size:11px;font-weight:600;color:var(--active-tx);font-variant-numeric:tabular-nums}
+
+/* Result */
+.result-badge{text-align:center;padding:8px;border-radius:6px;font-size:13px;font-weight:700;display:none}
+.result-badge.win{background:rgba(34,197,94,.13);color:#16a34a;display:block}
+.result-badge.lose{background:rgba(220,38,38,.13);color:#dc2626;display:block}
+
+/* Buy buttons */
+.btn-row{display:flex;gap:7px;margin-top:auto}
+.trade-btn{flex:1;padding:11px 0;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;letter-spacing:.02em;transition:opacity .15s,transform .1s,background .2s;color:#fff;position:relative}
+.trade-btn:hover:not(:disabled){opacity:.88}
+.trade-btn:active:not(:disabled){transform:scale(.97)}
+.btn-over{background:#16a34a}
+.btn-under{background:#dc2626}
+.trade-btn:disabled{opacity:.35;cursor:not-allowed;transform:none}
+.trade-btn .buf-ring{position:absolute;inset:0;border-radius:8px;border:2px solid rgba(255,255,255,.6);animation:ringPulse .5s linear forwards;pointer-events:none;display:none}
+@keyframes ringPulse{0%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(1.06)}}
+
+/* Toast */
+#toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:var(--bg2);border:1px solid var(--border2);border-radius:8px;padding:9px 18px;font-size:13px;font-weight:500;color:var(--text);opacity:0;transition:opacity .3s;pointer-events:none;z-index:999;white-space:nowrap;box-shadow:0 4px 24px rgba(0,0,0,.18)}
+#toast.show{opacity:1}
+
+.panel::-webkit-scrollbar{width:4px}
+.panel::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+</style>
+</head>
+<body>
+<div class="dash">
+
+<div class="offline-banner" id="offlineBanner">⚠ Offline — price data paused. Progress saved locally.</div>
+
+<!-- Topbar -->
+<div class="topbar">
+  <div class="sym-left">
+    <select class="mkt-select" id="mktSelect">
+      <option value="acc.html">KNRA 1</option>
+      <option value="KNRA2.html">KNRA 2</option>
+      <option value="KNRA3.html">KNRA 3</option>
+      <option value="KNRA4.html">KNRA 4</option>
+      <option value="KNRA5.html">KNRA 5</option>
+      <option value="KNRA6.html">KNRA 6</option>
+      <option value="KNRA7.html">KNRA 7</option>
+    </select>
+    <span class="sym-badge">KNRA 1</span>
+    <span class="tt-badge">Over / Under</span>
+    <span class="live-dot"></span>
+  </div>
+  <div style="display:flex;align-items:center;gap:12px">
+    <span class="price-main" id="livePrice">—</span>
+    <span class="price-change" id="priceChange">—</span>
+    <button class="theme-btn" id="themeBtn">🌙</button>
+  </div>
+</div>
+
+<!-- Main -->
+<div class="main-area">
+
+  <!-- Chart + digit bar -->
+  <div class="chart-col">
+    <div class="chart-area">
+      <div class="chart-wrap">
+        <canvas id="tickChart" role="img" aria-label="Live price chart KNRA 1">Live price</canvas>
+      </div>
+    </div>
+
+    <!-- Digit bar — grid of 10 cards -->
+    <div class="digit-bar" id="digitBar">
+      <!-- filled by JS -->
+    </div>
+  </div>
+
+  <!-- Panel -->
+  <div class="panel">
+    <div class="panel-title">Over / Under — KNRA 1</div>
+
+    <!-- Last digit -->
+    <div>
+      <div class="field-label">Last digit</div>
+      <div class="last-digit-display">
+        <span class="ld-val" id="lastDigit">—</span>
+      </div>
+    </div>
+
+    <!-- Duration -->
+    <div>
+      <div class="field-label">Duration (ticks)</div>
+      <div class="ticks-opts" id="ticksOpts">
+        <button class="t-btn" data-t="1">1</button>
+        <button class="t-btn active" data-t="3">3</button>
+        <button class="t-btn" data-t="5">5</button>
+        <button class="t-btn" data-t="10">10</button>
+        <button class="t-btn" data-t="15">15</button>
+      </div>
+    </div>
+
+    <!-- Stake -->
+    <div>
+      <div class="field-label">Stake (USD)</div>
+      <div class="input-row">
+        <button class="input-adj" id="stakeMinus">−</button>
+        <input type="number" id="stakeInput" value="10" min="1" max="5000" step="1">
+        <button class="input-adj" id="stakePlus">+</button>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- Payouts -->
+    <div>
+      <div class="field-label">Potential payout</div>
+      <div class="payout-row">
+        <div class="payout-box over"><div class="pb-label">OVER</div><div class="pb-val" id="payoutOver">—</div></div>
+        <div class="payout-box under"><div class="pb-label">UNDER</div><div class="pb-val" id="payoutUnder">—</div></div>
+      </div>
+    </div>
+
+    <!-- Active trade info -->
+    <div class="active-trade-info" id="activeTradeInfo">
+      <div class="ati-row"><span class="ati-label">Direction</span><span class="ati-val" id="atiDir">—</span></div>
+      <div class="ati-row"><span class="ati-label">Barrier</span><span class="ati-val" id="atiBarrier">—</span></div>
+      <div class="ati-row"><span class="ati-label">Ticks left</span><span class="ati-val" id="atiTicksLeft">—</span></div>
+      <div class="ati-row"><span class="ati-label">Score</span><span class="ati-val" id="atiResult">—</span></div>
+    </div>
+
+    <!-- Result -->
+    <div class="result-badge" id="resultBadge"></div>
+
+    <!-- Stats -->
+    <div class="stat-row"><span class="stat-label">Win rate</span><span class="stat-val" id="winRate">—</span></div>
+    <div class="stat-row">
+      <span class="stat-label">Total P&amp;L</span>
+      <span class="stat-val" id="totalPnl">$0.00</span>
+    </div>
+    <div class="stat-row"><span class="stat-label">Spot price</span><span class="stat-val" id="seedDisplay">—</span></div>
+
+    <!-- Buttons -->
+    <div class="btn-row">
+      <button class="trade-btn btn-over" id="btnOver">▲ Over</button>
+      <button class="trade-btn btn-under" id="btnUnder">▼ Under</button>
+    </div>
+  </div>
+</div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+const MKT_ID    = 'knra1';
+const TICK_MS   = 2330;
+const STORE_KEY = 'knra_state_' + MKT_ID;
+
+// ── State ─────────────────────────────────────────────────────────────────
+let state = {
+  currentPrice: 10000 + Math.random() * 2000,
+  prices: [],
+  lastDigits: [],
+  digitCounts: [0,0,0,0,0,0,0,0,0,0],
+  barrier: 4,
+  tickDuration: 3,
+  stake: 10,
+  totalPnl: 0,
+  tradeWins: 0,
+  tradeLosses: 0,
+  theme: 'dark',
+};
+
+// ── Persist ───────────────────────────────────────────────────────────────
+function saveState() {
+  try {
+    localStorage.setItem(STORE_KEY, JSON.stringify({
+      ...state,
+      prices: state.prices.slice(-200),
+      lastDigits: state.lastDigits.slice(-200),
+    }));
+  } catch(e) {}
+}
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORE_KEY);
+    if (!raw) return;
+    Object.assign(state, JSON.parse(raw));
+    if (!state.digitCounts || state.digitCounts.length !== 10)
+      state.digitCounts = [0,0,0,0,0,0,0,0,0,0];
+  } catch(e) {}
+}
+
+// ── Theme ─────────────────────────────────────────────────────────────────
+function applyTheme(t) {
+  state.theme = t;
+  document.documentElement.setAttribute('data-theme', t);
+  document.getElementById('themeBtn').textContent = t === 'dark' ? '☀️' : '🌙';
+  saveState();
+}
+document.getElementById('themeBtn').addEventListener('click', () => {
+  applyTheme(state.theme === 'dark' ? 'light' : 'dark');
+  resize(); drawChart();
+});
+
+// ── Market selector ───────────────────────────────────────────────────────
+const mktSelect = document.getElementById('mktSelect');
+mktSelect.value = 'acc.html';
+mktSelect.addEventListener('change', () => { saveState(); window.location.href = mktSelect.value; });
+
+// ── Helpers ───────────────────────────────────────────────────────────────
+function lastDigitOf(p) { return parseInt(p.toFixed(2).replace('.','').slice(-1)); }
+
+function computePayouts() {
+  const b = state.barrier, m = 0.945;
+  const op = (state.stake / Math.max((9-b)/10, 0.01)) * m;
+  const up = (state.stake / Math.max(b/10, 0.01)) * m;
+  document.getElementById('payoutOver').textContent  = '$' + op.toFixed(2);
+  document.getElementById('payoutUnder').textContent = '$' + up.toFixed(2);
+  return { op, up };
+}
+function getPayout(dir) { const {op,up}=computePayouts(); return dir==='over'?op:up; }
+
+function showToast(msg, color) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.style.color = color||'';
+  t.classList.add('show');
+  clearTimeout(t._tid);
+  t._tid = setTimeout(()=>t.classList.remove('show'), 2800);
+}
+
+function updateStats() {
+  const total = state.tradeWins + state.tradeLosses;
+  document.getElementById('winRate').textContent = total>0 ? ((state.tradeWins/total)*100).toFixed(0)+'%' : '—';
+  const pnl = state.totalPnl;
+  const el = document.getElementById('totalPnl');
+  el.textContent = (pnl>=0?'+':'')+'$'+pnl.toFixed(2);
+  el.style.color = pnl>=0?'#22c55e':'#ef4444';
+  document.getElementById('seedDisplay').textContent = state.currentPrice.toFixed(2);
+}
+
+// ── Digit squares ─────────────────────────────────────────────────────────
+function buildDigitBar() {
+  const bar = document.getElementById('digitBar');
+  bar.innerHTML = '';
+  for (let d = 0; d <= 9; d++) {
+    const sq = document.createElement('div');
+    sq.className = 'dq' + (d === state.barrier ? ' active' : '');
+    sq.dataset.d = d;
+    sq.innerHTML =
+      '<div class="dq-circle" id="dqcircle' + d + '">' + d + '</div>' +
+      '<div class="dq-pct"  id="dqpct'    + d + '">0%</div>' +
+      '<div class="dq-count" id="dqcnt'   + d + '">0</div>';
+    sq.addEventListener('click', () => {
+      if (inTrade || pendingTrade) return;
+      document.querySelectorAll('.dq').forEach(s => s.classList.remove('active'));
+      sq.classList.add('active');
+      state.barrier = d;
+      computePayouts();
+    });
+    bar.appendChild(sq);
+  }
+}
+
+function updateDigitSquares(lastDigit) {
+  const counts = state.digitCounts;
+  const total  = counts.reduce((a,b)=>a+b, 0) || 1;
+  const maxC   = Math.max(...counts);
+  const minC   = Math.min(...counts);
+
+  for (let d = 0; d <= 9; d++) {
+    const sq  = document.querySelector('.dq[data-d="' + d + '"]');
+    const pct = document.getElementById('dqpct' + d);
+    const cnt = document.getElementById('dqcnt' + d);
+    if (!sq || !pct || !cnt) continue;
+
+    pct.textContent = ((counts[d]/total)*100).toFixed(1) + '%';
+    cnt.textContent = counts[d];
+
+    // Remove rank classes; active class preserved
+    sq.classList.remove('highest','lowest','last-hit');
+
+    // Rank badges (don't apply to active so green wins visually)
+    if (!sq.classList.contains('active')) {
+      if (maxC > 0 && counts[d] === maxC) sq.classList.add('highest');
+      else if (counts[d] === minC)         sq.classList.add('lowest');
+    }
+
+    // Green flash on the digit that just appeared
+    if (d === lastDigit) {
+      sq.classList.add('last-hit');
+      setTimeout(() => sq.classList.remove('last-hit'), TICK_MS - 100);
+    }
+  }
+}
+
+// ── Chart ─────────────────────────────────────────────────────────────────
+const canvas = document.getElementById('tickChart');
+const ctx    = canvas.getContext('2d');
+
+function resize() {
+  canvas.width  = canvas.parentElement.clientWidth;
+  canvas.height = canvas.parentElement.clientHeight;
+}
+
+function cssVar(v) { return getComputedStyle(document.documentElement).getPropertyValue(v).trim(); }
+
+function drawChart() {
+  const W = canvas.width, H = canvas.height;
+  ctx.clearRect(0, 0, W, H);
+  const vis = state.prices.slice(-150);
+  if (vis.length < 2) return;
+
+  const minV = Math.min(...vis) - 2;
+  const maxV = Math.max(...vis) + 2;
+  const range = maxV - minV || 1;
+  const pad = { l:60, r:18, t:22, b:28 };
+  const cW = W - pad.l - pad.r;
+  const cH = H - pad.t - pad.b;
+  const toX = i => pad.l + (i / (vis.length-1)) * cW;
+  const toY = v => pad.t + (1 - (v-minV)/range) * cH;
+
+  // Grid + Y labels
+  ctx.lineWidth = 0.5;
+  for (let i = 0; i <= 5; i++) {
+    const y = pad.t + (i/5)*cH;
+    ctx.strokeStyle = cssVar('--grid-line');
+    ctx.beginPath(); ctx.moveTo(pad.l, y); ctx.lineTo(W-pad.r, y); ctx.stroke();
+    ctx.fillStyle = cssVar('--label-col');
+    ctx.font = '9px system-ui'; ctx.textAlign = 'right';
+    ctx.fillText((maxV-(i/5)*range).toFixed(2), pad.l-4, y+3);
+  }
+  ctx.textAlign = 'left';
+
+  // Gradient fill under line
+  const grad = ctx.createLinearGradient(0, pad.t, 0, H);
+  grad.addColorStop(0, cssVar('--chart-fill-top'));
+  grad.addColorStop(1, cssVar('--chart-fill-bot'));
+  ctx.beginPath();
+  vis.forEach((v,i)=>{ const x=toX(i),y=toY(v); i===0?ctx.moveTo(x,y):ctx.lineTo(x,y); });
+  ctx.lineTo(toX(vis.length-1), H-pad.b);
+  ctx.lineTo(toX(0), H-pad.b);
+  ctx.closePath(); ctx.fillStyle = grad; ctx.fill();
+
+  // Price line
+  ctx.beginPath();
+  ctx.strokeStyle = cssVar('--price-line');
+  ctx.lineWidth = 1.8;
+  vis.forEach((v,i)=>{ const x=toX(i),y=toY(v); i===0?ctx.moveTo(x,y):ctx.lineTo(x,y); });
+  ctx.stroke();
+
+  // Current price horizontal dashed line
+  const lastP = vis[vis.length-1];
+  const lastY = toY(lastP);
+  ctx.setLineDash([4,4]);
+  ctx.strokeStyle = cssVar('--price-line');
+  ctx.lineWidth = 0.8;
+  ctx.globalAlpha = 0.35;
+  ctx.beginPath(); ctx.moveTo(pad.l, lastY); ctx.lineTo(W-pad.r, lastY); ctx.stroke();
+  ctx.globalAlpha = 1; ctx.setLineDash([]);
+
+  // Price label on right
+  ctx.fillStyle = cssVar('--price-line');
+  ctx.font = 'bold 10px system-ui';
+  ctx.fillText(lastP.toFixed(2), W-pad.r+3, lastY+4);
+
+  // Ping dot
+  const lx = toX(vis.length-1), ly = toY(lastP);
+  const pingAlpha = 0.5 + 0.5 * Math.sin(Date.now() / 200);
+  ctx.beginPath();
+  ctx.arc(lx, ly, 9, 0, Math.PI*2);
+  ctx.strokeStyle = cssVar('--price-line');
+  ctx.lineWidth = 1;
+  ctx.globalAlpha = pingAlpha * 0.5;
+  ctx.stroke();
+  ctx.globalAlpha = 1;
+
+  ctx.beginPath(); ctx.arc(lx, ly, 5, 0, Math.PI*2);
+  ctx.fillStyle = cssVar('--price-line');
+  ctx.fill();
+  ctx.strokeStyle = cssVar('--bg'); ctx.lineWidth = 1.5; ctx.stroke();
+
+  const tag = lastP.toFixed(2);
+  const tw = ctx.measureText(tag).width;
+  const tx = lx + 10, ty = ly - 8;
+  ctx.fillStyle = cssVar('--price-line');
+  ctx.globalAlpha = 0.12;
+  ctx.fillRect(tx-3, ty-11, tw+8, 15);
+  ctx.globalAlpha = 1;
+  ctx.fillStyle = cssVar('--price-line');
+  ctx.font = 'bold 10px system-ui';
+  ctx.fillText(tag, tx+1, ty);
+}
+
+// ── Trade logic ───────────────────────────────────────────────────────────
+let inTrade       = false;
+let pendingTrade  = false;
+let tradeDir      = null;
+let tradeTicksLeft= 0;
+let tradeResults  = [];
+
+function setBtns(disabled) {
+  document.getElementById('btnOver').disabled  = disabled;
+  document.getElementById('btnUnder').disabled = disabled;
+  document.querySelectorAll('.t-btn').forEach(b=>b.disabled=disabled);
+}
+
+function executeTrade(dir) {
+  inTrade = true; pendingTrade = false;
+  tradeDir = dir; tradeTicksLeft = state.tickDuration; tradeResults = [];
+  document.getElementById('resultBadge').className = 'result-badge';
+  const info = document.getElementById('activeTradeInfo');
+  info.classList.add('show');
+  document.getElementById('atiDir').textContent       = dir==='over'?'▲ Over':'▼ Under';
+  document.getElementById('atiDir').style.color       = dir==='over'?'#22c55e':'#ef4444';
+  document.getElementById('atiBarrier').textContent   = state.barrier;
+  document.getElementById('atiTicksLeft').textContent = state.tickDuration;
+  document.getElementById('atiResult').textContent    = '—';
+  showToast('Trade open — '+(dir==='over'?'▲ Over ':'▼ Under ')+state.barrier, dir==='over'?'#22c55e':'#ef4444');
+}
+
+function startTrade(dir) {
+  if (inTrade || pendingTrade) return;
+  pendingTrade = true;
+  setBtns(true);
+
+  const btn = document.getElementById(dir==='over'?'btnOver':'btnUnder');
+  const ring = document.createElement('div');
+  ring.className = 'buf-ring';
+  ring.style.display = 'block';
+  btn.appendChild(ring);
+  setTimeout(()=>{ ring.remove(); }, 500);
+
+  showToast('Contract pending…', '#94a3b8');
+  setTimeout(()=>executeTrade(dir), 500);
+}
+
+function evaluateTick(digit) {
+  if (!inTrade) return;
+  const win = tradeDir==='over' ? digit>state.barrier : digit<state.barrier;
+  tradeResults.push(win);
+  tradeTicksLeft--;
+  document.getElementById('atiTicksLeft').textContent = tradeTicksLeft;
+  document.getElementById('atiResult').textContent =
+    tradeResults.filter(Boolean).length+'W / '+tradeResults.filter(x=>!x).length+'L';
+  if (tradeTicksLeft<=0) finalizeTrade();
+}
+
+function finalizeTrade() {
+  inTrade = false;
+  document.getElementById('activeTradeInfo').classList.remove('show');
+  setBtns(false);
+  const allWin  = tradeResults.every(Boolean);
+  const payout  = allWin ? getPayout(tradeDir) : 0;
+  const profit  = payout - state.stake;
+  state.totalPnl += profit;
+  if (allWin) state.tradeWins++; else state.tradeLosses++;
+  const badge = document.getElementById('resultBadge');
+  if (allWin) {
+    badge.className='result-badge win';
+    badge.textContent='✓ Win! +$'+profit.toFixed(2);
+    showToast('Win! +$'+profit.toFixed(2),'#22c55e');
+  } else {
+    badge.className='result-badge lose';
+    badge.textContent='✗ Lost -$'+state.stake.toFixed(2);
+    showToast('Lost -$'+state.stake.toFixed(2),'#ef4444');
+  }
+  setTimeout(()=>{ badge.className='result-badge'; }, 3000);
+  updateStats(); saveState();
+}
+
+// ── Main tick ─────────────────────────────────────────────────────────────
+let startRef    = null;
+let tickInterval = null;
+let animFrame   = null;
+
+function tick() {
+  const move = (Math.random()-0.495)*1.9;
+  state.currentPrice = Math.max(state.currentPrice+move, 1);
+  state.prices.push(state.currentPrice);
+  if (state.prices.length>500) state.prices.shift();
+
+  const ld = lastDigitOf(state.currentPrice);
+  state.lastDigits.push(ld);
+  if (state.lastDigits.length>500) state.lastDigits.shift();
+  state.digitCounts[ld]++;
+
+  if (!startRef) startRef = state.currentPrice;
+
+  document.getElementById('livePrice').textContent = state.currentPrice.toFixed(2);
+  const ld_el = document.getElementById('lastDigit');
+  ld_el.textContent = ld;
+  ld_el.style.color = ld>state.barrier?'#22c55e':ld<state.barrier?'#ef4444':'#94a3b8';
+
+  const pct = ((state.currentPrice-startRef)/startRef*100).toFixed(2);
+  const pc = document.getElementById('priceChange');
+  pc.textContent = (pct>=0?'+':'')+pct+'%';
+  pc.style.color = pct>=0?'#22c55e':'#ef4444';
+
+  updateDigitSquares(ld);
+  evaluateTick(ld);
+
+  if (state.prices.length%5===0) saveState();
+}
+
+function animLoop() {
+  resize(); drawChart();
+  animFrame = requestAnimationFrame(animLoop);
+}
+
+function startTicks() {
+  if (tickInterval) return;
+  tickInterval = setInterval(tick, TICK_MS);
+  if (!animFrame) animLoop();
+}
+function stopTicks() {
+  clearInterval(tickInterval); tickInterval=null;
+  cancelAnimationFrame(animFrame); animFrame=null;
+}
+
+// ── Offline ───────────────────────────────────────────────────────────────
+window.addEventListener('offline',()=>{
+  document.getElementById('offlineBanner').classList.add('show');
+  stopTicks(); saveState();
+  showToast('Gone offline — progress saved','#ef4444');
+});
+window.addEventListener('online',()=>{
+  document.getElementById('offlineBanner').classList.remove('show');
+  startTicks();
+  showToast('Back online — ticks resumed','#22c55e');
+});
+
+// ── UI events ─────────────────────────────────────────────────────────────
+document.getElementById('ticksOpts').addEventListener('click', e=>{
+  const btn=e.target.closest('.t-btn');
+  if(!btn||inTrade||pendingTrade) return;
+  document.querySelectorAll('.t-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  state.tickDuration=parseInt(btn.dataset.t);
+});
+document.getElementById('stakeMinus').addEventListener('click',()=>{
+  const inp=document.getElementById('stakeInput');
+  state.stake=Math.max(1,(parseFloat(inp.value)||1)-1);
+  inp.value=state.stake; computePayouts();
+});
+document.getElementById('stakePlus').addEventListener('click',()=>{
+  const inp=document.getElementById('stakeInput');
+  state.stake=Math.min(5000,(parseFloat(inp.value)||1)+1);
+  inp.value=state.stake; computePayouts();
+});
+document.getElementById('stakeInput').addEventListener('input',e=>{
+  state.stake=Math.max(1,parseFloat(e.target.value)||1);
+  computePayouts();
+});
+document.getElementById('btnOver').addEventListener('click',()=>startTrade('over'));
+document.getElementById('btnUnder').addEventListener('click',()=>startTrade('under'));
+window.addEventListener('resize',()=>{ resize(); drawChart(); });
+
+// ── Boot ──────────────────────────────────────────────────────────────────
+loadState();
+applyTheme(state.theme);
+document.getElementById('stakeInput').value = state.stake;
+buildDigitBar();
+
+if (state.lastDigits.length>0 && state.digitCounts.every(c=>c===0)) {
+  state.lastDigits.forEach(d=>state.digitCounts[d]++);
+}
+
+if (state.prices.length<10) {
+  for (let i=0;i<80;i++){
+    const m=(Math.random()-0.495)*1.9;
+    state.currentPrice=Math.max(state.currentPrice+m,1);
+    state.prices.push(state.currentPrice);
+    const d=lastDigitOf(state.currentPrice);
+    state.lastDigits.push(d);
+    state.digitCounts[d]++;
+  }
+}
+
+startRef = state.currentPrice;
+computePayouts(); updateDigitSquares(-1); updateStats();
+startTicks();
+</script>
+</body>
+</html>

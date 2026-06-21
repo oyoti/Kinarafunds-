@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Payouts — KNRA Funded</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="shared.css"/>
+<style>
+.payout-grid{display:grid;grid-template-columns:1fr 320px;gap:1.6rem;align-items:start;}
+.payout-accounts{display:flex;flex-direction:column;gap:1rem;}
+.payout-card{background:var(--white);border:1.5px solid var(--border);border-radius:14px;padding:1.4rem;}
+.pc-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;}
+.pc-id{font-size:0.74rem;color:var(--light);font-weight:600;}
+.pc-size{font-family:'Playfair Display',serif;font-size:1.2rem;font-weight:700;}
+.pc-avail .av-label{font-size:0.72rem;color:var(--light);}
+.pc-avail .av-val{font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:700;color:var(--green);text-align:right;}
+.pc-info{display:grid;grid-template-columns:repeat(3,1fr);gap:0.6rem;margin-bottom:1rem;}
+.pc-info-item .i-label{font-size:0.72rem;color:var(--light);margin-bottom:2px;}
+.pc-info-item .i-val{font-size:0.88rem;font-weight:700;}
+.request-btn{width:100%;padding:0.7rem;background:var(--charcoal);color:white;border:none;border-radius:8px;font-family:'DM Sans',sans-serif;font-weight:700;font-size:0.88rem;cursor:pointer;transition:0.2s;}
+.request-btn:hover{background:var(--gold);color:black;}
+.right-col{display:flex;flex-direction:column;gap:1rem;}
+.info-box{background:var(--white);border:1.5px solid var(--border);border-radius:14px;padding:1.4rem;}
+.info-box h3{font-family:'Playfair Display',serif;font-size:1rem;font-weight:700;margin-bottom:1rem;}
+.info-row{display:flex;justify-content:space-between;padding:0.5rem 0;border-bottom:1px solid var(--border);font-size:0.84rem;}
+.info-row:last-child{border-bottom:none;}
+.info-row .ir-label{color:var(--light);}
+.info-row .ir-val{font-weight:700;}
+.history-mini{background:var(--white);border:1.5px solid var(--border);border-radius:14px;padding:1.4rem;}
+.history-mini h3{font-family:'Playfair Display',serif;font-size:1rem;font-weight:700;margin-bottom:1rem;}
+.hist-item{display:flex;justify-content:space-between;align-items:center;padding:0.6rem 0;border-bottom:1px solid var(--border);font-size:0.83rem;}
+.hist-item:last-child{border-bottom:none;}
+.hi-left .hi-name{font-weight:600;}
+.hi-left .hi-date{font-size:0.74rem;color:var(--light);}
+/* Modal */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:200;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:0.25s;}
+.modal-overlay.open{opacity:1;pointer-events:all;}
+.modal{background:var(--white);border-radius:16px;width:90%;max-width:440px;padding:2rem;position:relative;transform:translateY(20px);transition:0.25s;}
+.modal-overlay.open .modal{transform:translateY(0);}
+.modal-close{position:absolute;top:1rem;right:1rem;width:30px;height:30px;border-radius:50%;border:none;background:var(--off-white);cursor:pointer;font-size:1rem;}
+.modal h2{font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:900;margin-bottom:0.3rem;}
+.modal .m-sub{font-size:0.82rem;color:var(--light);margin-bottom:1.4rem;}
+.form-group{margin-bottom:1rem;}
+.form-group label{display:block;font-size:0.8rem;font-weight:600;color:var(--mid);margin-bottom:0.4rem;}
+.form-group input,.form-group select{width:100%;padding:0.7rem 0.9rem;border:1.5px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:0.9rem;color:var(--charcoal);background:var(--off-white);outline:none;}
+.form-group input:focus,.form-group select:focus{border-color:var(--gold);}
+.modal-note{background:var(--gold-pale);border:1px solid var(--gold);border-radius:8px;padding:0.8rem;font-size:0.8rem;color:var(--mid);margin-bottom:1.2rem;}
+.submit-btn{width:100%;padding:0.85rem;background:var(--charcoal);color:white;border:none;border-radius:8px;font-family:'DM Sans',sans-serif;font-weight:700;font-size:0.92rem;cursor:pointer;transition:0.2s;}
+.submit-btn:hover{background:var(--gold);color:black;}
+.submit-btn:disabled{opacity:0.6;cursor:not-allowed;}
+.alert{padding:0.8rem;border-radius:8px;font-size:0.84rem;margin-top:0.8rem;display:none;}
+.alert.show{display:block;}
+.alert.success{background:#e8f5ed;color:var(--green);border:1px solid #c3e6cb;}
+.alert.error{background:#fef2f2;color:var(--red);border:1px solid #f5c6cb;}
+</style>
+</head>
+<body>
+<div class="layout">
+  <aside class="sidebar" id="sidebar"></aside>
+  <main class="main">
+    <div class="topbar">
+      <div class="topbar-title">Payouts</div>
+      <div style="font-size:0.85rem;color:var(--mid);" id="payoutSubtitle"></div>
+    </div>
+    <div class="content">
+      <div class="payout-grid">
+        <div>
+          <div class="section-title" style="margin-bottom:1rem;">Available for Payout</div>
+          <div class="payout-accounts" id="payoutAccounts">
+            <div class="empty-state">Loading payout data…</div>
+          </div>
+        </div>
+        <div class="right-col">
+          <div class="info-box" id="rulesBox">
+            <h3>💡 Payout Rules</h3>
+            <div class="empty-state">Loading…</div>
+          </div>
+          <div class="history-mini">
+            <h3>Recent Payouts</h3>
+            <div id="recentPayouts"><div class="empty-state">Loading…</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- PAYOUT MODAL -->
+<div class="modal-overlay" id="payoutModal" onclick="closeOutside(event)">
+  <div class="modal">
+    <button class="modal-close" onclick="closePayoutModal()">✕</button>
+    <h2>Request Payout</h2>
+    <div class="m-sub" id="payoutSub"></div>
+    <div class="modal-note">⏱ Payouts are processed within 24 hours.</div>
+    <div class="form-group">
+      <label>Payout Amount</label>
+      <input type="number" id="payoutAmt" placeholder="0.00" min="0" step="0.01"/>
+    </div>
+    <div class="form-group">
+      <label>Payment Method</label>
+      <select id="payoutMethod">
+        <option value="bank">Bank Transfer</option>
+        <option value="crypto">Cryptocurrency (USDT)</option>
+        <option value="card">Credit / Debit Card</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Account / Wallet Details</label>
+      <input type="text" id="payoutWallet" placeholder="Bank account or wallet address"/>
+    </div>
+    <button class="submit-btn" id="payoutSubmitBtn" onclick="submitPayout()">Submit Payout Request →</button>
+    <div class="alert" id="payoutAlert"></div>
+  </div>
+</div>
+
+<script src="config.js"></script>
+<script src="sidebar.js"></script>
+<script>
+requireAuth();
+renderSidebar('payouts');
+
+let activeAccountId = null;
+
+async function loadPayouts() {
+  try {
+    // ── GET /api/payouts ──────────────────────────────────────────────────────
+    // Expected:
+    // {
+    //   rules: {
+    //     profitSplit:    string,   e.g. "80% to trader"
+    //     processingTime: string,
+    //     minPayout:      string,
+    //     frequency:      string,
+    //     methods:        string,
+    //   },
+    //   accounts: [{
+    //     id:           string,
+    //     size:         string,
+    //     totalProfit:  string,
+    //     yourSplit:    string,
+    //     available:    string,
+    //     splitPct:     string,  e.g. "80%"
+    //     lastPayout:   string,
+    //   }],
+    //   recentPayouts: [{
+    //     account:  string,
+    //     date:     string,
+    //     amount:   string,
+    //     status:   string,
+    //   }]
+    // }
+    // ─────────────────────────────────────────────────────────────────────────
+    const data = await API.get(API.ENDPOINTS.PAYOUTS);
+    renderRules(data.rules || {});
+    renderPayoutAccounts(data.accounts || []);
+    renderRecentPayouts(data.recentPayouts || []);
+    document.getElementById('payoutSubtitle').textContent = data.rules?.profitSplit
+      ? `${data.rules.profitSplit} · ${data.rules.processingTime} processing`
+      : '';
+  } catch (err) {
+    document.getElementById('payoutAccounts').innerHTML = `<div class="empty-state">⚠ ${err.message}</div>`;
+  }
+}
+
+function renderRules(r) {
+  document.getElementById('rulesBox').innerHTML = `
+    <h3>💡 Payout Rules</h3>
+    ${r.profitSplit    ? `<div class="info-row"><span class="ir-label">Profit Split</span><span class="ir-val">${r.profitSplit}</span></div>` : ''}
+    ${r.processingTime ? `<div class="info-row"><span class="ir-label">Processing Time</span><span class="ir-val">${r.processingTime}</span></div>` : ''}
+    ${r.minPayout      ? `<div class="info-row"><span class="ir-label">Min Payout</span><span class="ir-val">${r.minPayout}</span></div>` : ''}
+    ${r.frequency      ? `<div class="info-row"><span class="ir-label">Frequency</span><span class="ir-val">${r.frequency}</span></div>` : ''}
+    ${r.methods        ? `<div class="info-row"><span class="ir-label">Methods</span><span class="ir-val">${r.methods}</span></div>` : ''}
+    ${!Object.keys(r).length ? '<div class="empty-state">No rules data.</div>' : ''}
+  `;
+}
+
+function renderPayoutAccounts(accounts) {
+  if (!accounts.length) {
+    document.getElementById('payoutAccounts').innerHTML = '<div class="empty-state">No funded accounts available for payout.</div>';
+    return;
+  }
+  document.getElementById('payoutAccounts').innerHTML = accounts.map(a => `
+    <div class="payout-card">
+      <div class="pc-top">
+        <div><div class="pc-id">${a.id}</div><div class="pc-size">${a.size} Funded</div></div>
+        <div class="pc-avail"><div class="av-label">Available</div><div class="av-val">${a.available}</div></div>
+      </div>
+      <div class="pc-info">
+        <div class="pc-info-item"><div class="i-label">Total Profit</div><div class="i-val">${a.totalProfit}</div></div>
+        <div class="pc-info-item"><div class="i-label">Your Split (${a.splitPct})</div><div class="i-val" style="color:var(--green)">${a.yourSplit}</div></div>
+        <div class="pc-info-item"><div class="i-label">Last Payout</div><div class="i-val">${a.lastPayout ?? 'None'}</div></div>
+      </div>
+      <button class="request-btn" onclick="openPayoutModal('${a.id}','${a.available}','${a.size}')">Request Payout →</button>
+    </div>
+  `).join('');
+}
+
+function renderRecentPayouts(list) {
+  if (!list.length) {
+    document.getElementById('recentPayouts').innerHTML = '<div class="empty-state">No payout history.</div>';
+    return;
+  }
+  document.getElementById('recentPayouts').innerHTML = list.map(p => `
+    <div class="hist-item">
+      <div class="hi-left">
+        <div class="hi-name">${p.account}</div>
+        <div class="hi-date">${p.date} · ${p.amount}</div>
+      </div>
+      <span class="pill ${p.status === 'Paid' ? 'pill-green' : 'pill-gold'}">${p.status}</span>
+    </div>
+  `).join('');
+}
+
+function openPayoutModal(id, available, size) {
+  activeAccountId = id;
+  document.getElementById('payoutSub').textContent = `Account ${id} (${size}) · Available: ${available}`;
+  document.getElementById('payoutAmt').value = '';
+  document.getElementById('payoutWallet').value = '';
+  document.getElementById('payoutAlert').className = 'alert';
+  document.getElementById('payoutModal').classList.add('open');
+}
+function closePayoutModal() { document.getElementById('payoutModal').classList.remove('open'); }
+function closeOutside(e)    { if (e.target.id === 'payoutModal') closePayoutModal(); }
+
+async function submitPayout() {
+  const amount = document.getElementById('payoutAmt').value;
+  const method = document.getElementById('payoutMethod').value;
+  const wallet = document.getElementById('payoutWallet').value;
+  const alertEl = document.getElementById('payoutAlert');
+
+  if (!amount || parseFloat(amount) <= 0) {
+    alertEl.textContent = 'Please enter a valid amount.';
+    alertEl.className = 'alert show error';
+    return;
+  }
+
+  const btn = document.getElementById('payoutSubmitBtn');
+  btn.disabled = true;
+  btn.textContent = 'Submitting…';
+  alertEl.className = 'alert';
+
+  try {
+    // ── POST /api/payouts/request ─────────────────────────────────────────────
+    // Body:   { accountId, amount, method, walletDetails }
+    // Expected: { success: true, message: string }
+    // ─────────────────────────────────────────────────────────────────────────
+    const res = await API.post(API.ENDPOINTS.PAYOUT_REQUEST, {
+      accountId:     activeAccountId,
+      amount:        parseFloat(amount),
+      method,
+      walletDetails: wallet,
+    });
+    alertEl.textContent = res.message || 'Payout request submitted!';
+    alertEl.className = 'alert show success';
+    setTimeout(() => { closePayoutModal(); loadPayouts(); }, 1500);
+  } catch (err) {
+    alertEl.textContent = err.message;
+    alertEl.className = 'alert show error';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Submit Payout Request →';
+  }
+}
+
+loadPayouts();
+</script>
+</body>
+</html>

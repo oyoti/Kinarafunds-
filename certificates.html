@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Certificates — KNRA Funded</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="shared.css"/>
+<style>
+.cert-banner{background:var(--charcoal);border-radius:14px;padding:1.8rem 2rem;margin-bottom:2rem;display:flex;justify-content:space-between;align-items:center;}
+.cert-banner h2{font-family:'Playfair Display',serif;font-size:1.5rem;font-weight:900;color:white;margin-bottom:0.3rem;}
+.cert-banner h2 span{color:var(--gold);}
+.cert-banner p{font-size:0.85rem;color:rgba(255,255,255,0.45);}
+.cert-banner .trophy{font-size:3rem;}
+.coming-soon{background:var(--white);border:2px dashed var(--border);border-radius:16px;padding:4rem 2rem;text-align:center;margin-bottom:2rem;}
+.cs-icon{font-size:3.5rem;margin-bottom:1rem;}
+.cs-title{font-family:'Playfair Display',serif;font-size:1.6rem;font-weight:900;margin-bottom:0.6rem;}
+.cs-sub{font-size:0.9rem;color:var(--light);max-width:420px;margin:0 auto 1.5rem;line-height:1.6;}
+.cs-badge{display:inline-block;padding:6px 16px;border-radius:20px;background:var(--gold-pale);color:var(--gold);font-weight:700;font-size:0.82rem;border:1px solid var(--gold);}
+.preview-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.2rem;}
+.preview-card{background:var(--white);border:1.5px solid var(--border);border-radius:14px;overflow:hidden;opacity:0.65;}
+.cert-preview{background:linear-gradient(135deg,var(--charcoal) 0%,#2d2d2d 100%);padding:1.5rem;text-align:center;border-bottom:3px solid var(--gold);position:relative;overflow:hidden;}
+.cert-preview::before{content:'KNRA';position:absolute;font-family:'Playfair Display',serif;font-size:5rem;font-weight:900;color:rgba(255,255,255,0.04);bottom:-0.5rem;right:0.5rem;}
+.cert-preview .cp-icon{font-size:2rem;margin-bottom:0.5rem;}
+.cert-preview .cp-title{font-family:'Playfair Display',serif;font-size:0.95rem;font-weight:700;color:white;}
+.cert-preview .cp-sub{font-size:0.72rem;color:rgba(255,255,255,0.4);margin-top:0.2rem;}
+.cert-info{padding:1rem;}
+.cert-info .ci-name{font-weight:700;font-size:0.88rem;margin-bottom:0.3rem;}
+.cert-info .ci-desc{font-size:0.78rem;color:var(--light);line-height:1.4;}
+.cert-info .ci-status{margin-top:0.8rem;font-size:0.74rem;color:var(--gold);font-weight:700;}
+/* When certs exist */
+.cert-card{background:var(--white);border:1.5px solid var(--border);border-radius:14px;overflow:hidden;}
+.cert-card-header{background:linear-gradient(135deg,var(--charcoal),#2d2d2d);padding:1.5rem;text-align:center;border-bottom:3px solid var(--gold);}
+.cert-card-header .cc-icon{font-size:2.2rem;margin-bottom:0.5rem;}
+.cert-card-header .cc-title{font-family:'Playfair Display',serif;font-size:1rem;font-weight:700;color:white;}
+.cert-card-header .cc-date{font-size:0.74rem;color:rgba(255,255,255,0.4);margin-top:0.3rem;}
+.cert-card-body{padding:1.2rem;}
+.cert-card-body .cb-name{font-weight:700;margin-bottom:0.3rem;}
+.cert-card-body .cb-desc{font-size:0.8rem;color:var(--light);}
+.download-btn{width:100%;margin-top:0.8rem;padding:0.6rem;background:var(--charcoal);color:white;border:none;border-radius:8px;font-family:'DM Sans',sans-serif;font-weight:700;font-size:0.82rem;cursor:pointer;transition:0.2s;}
+.download-btn:hover{background:var(--gold);color:black;}
+@media(max-width:900px){.preview-grid{grid-template-columns:repeat(2,1fr);}}
+</style>
+</head>
+<body>
+<div class="layout">
+  <aside class="sidebar" id="sidebar"></aside>
+  <main class="main">
+    <div class="topbar">
+      <div class="topbar-title">Certificates</div>
+      <div style="font-size:0.85rem;color:var(--mid);" id="certCount"></div>
+    </div>
+    <div class="content">
+
+      <div class="cert-banner">
+        <div>
+          <h2>Your <span>Achievements</span></h2>
+          <p>Certificates are awarded when you complete challenges and reach funded milestones.</p>
+        </div>
+        <div class="trophy">🏆</div>
+      </div>
+
+      <!-- Dynamic content: real certs OR coming-soon -->
+      <div id="certContent">
+        <div class="empty-state">Loading certificates…</div>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<script src="config.js"></script>
+<script src="sidebar.js"></script>
+<script>
+requireAuth();
+renderSidebar('certificates');
+
+async function loadCertificates() {
+  try {
+    // ── GET /api/certificates ─────────────────────────────────────────────────
+    // Expected:
+    // {
+    //   available: bool,   false = show coming-soon, true = show cert cards
+    //   certificates: [{
+    //     id:          string,
+    //     icon:        string,   emoji
+    //     title:       string,
+    //     subtitle:    string,
+    //     awardedDate: string,
+    //     description: string,
+    //     downloadUrl: string | null,
+    //   }]
+    // }
+    // ─────────────────────────────────────────────────────────────────────────
+    const data = await API.get(API.ENDPOINTS.CERTIFICATES);
+
+    if (!data.available || !data.certificates?.length) {
+      renderComingSoon();
+    } else {
+      renderCertificates(data.certificates);
+    }
+  } catch (err) {
+    // If endpoint not yet built, show coming soon gracefully
+    renderComingSoon();
+  }
+}
+
+function renderComingSoon() {
+  document.getElementById('certCount').textContent = 'Coming soon';
+  document.getElementById('certContent').innerHTML = `
+    <div class="coming-soon">
+      <div class="cs-icon">🎓</div>
+      <div class="cs-title">Certificates Coming Soon</div>
+      <div class="cs-sub">We are building a beautiful certificate system for KNRA funded traders. You'll be able to download and share your funded trader certificates, challenge completions and milestone achievements.</div>
+      <span class="cs-badge">🔨 In Development</span>
+    </div>
+    <div class="section-title">Certificate Previews</div>
+    <div class="preview-grid">
+      <div class="preview-card">
+        <div class="cert-preview"><div class="cp-icon">🏅</div><div class="cp-title">Phase 1 Passed</div><div class="cp-sub">Challenge Completion</div></div>
+        <div class="cert-info"><div class="ci-name">Phase 1 Certificate</div><div class="ci-desc">Awarded upon successfully completing Phase 1 of any KNRA challenge.</div><div class="ci-status">⏳ Coming Soon</div></div>
+      </div>
+      <div class="preview-card">
+        <div class="cert-preview"><div class="cp-icon">🌟</div><div class="cp-title">Funded Trader</div><div class="cp-sub">Account Funded</div></div>
+        <div class="cert-info"><div class="ci-name">Funded Trader Certificate</div><div class="ci-desc">Awarded when you receive your first funded account with KNRA.</div><div class="ci-status">⏳ Coming Soon</div></div>
+      </div>
+      <div class="preview-card">
+        <div class="cert-preview"><div class="cp-icon">💎</div><div class="cp-title">First Payout</div><div class="cp-sub">Profit Achievement</div></div>
+        <div class="cert-info"><div class="ci-name">First Payout Certificate</div><div class="ci-desc">Awarded when you receive your first profit payout from a funded account.</div><div class="ci-status">⏳ Coming Soon</div></div>
+      </div>
+    </div>
+  `;
+}
+
+function renderCertificates(certs) {
+  document.getElementById('certCount').textContent = `${certs.length} certificate${certs.length !== 1 ? 's' : ''}`;
+  document.getElementById('certContent').innerHTML = `
+    <div class="preview-grid">
+      ${certs.map(c => `
+        <div class="cert-card">
+          <div class="cert-card-header">
+            <div class="cc-icon">${c.icon}</div>
+            <div class="cc-title">${c.title}</div>
+            <div class="cc-date">Awarded: ${c.awardedDate}</div>
+          </div>
+          <div class="cert-card-body">
+            <div class="cb-name">${c.subtitle}</div>
+            <div class="cb-desc">${c.description}</div>
+            ${c.downloadUrl
+              ? `<button class="download-btn" onclick="downloadCert('${c.downloadUrl}','${c.title}')">⬇ Download Certificate</button>`
+              : `<button class="download-btn" disabled style="opacity:0.4;cursor:not-allowed;">Download Unavailable</button>`
+            }
+          </div>
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
+
+function downloadCert(url, title) {
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = title.replace(/\s+/g, '-') + '.pdf';
+  a.click();
+}
+
+loadCertificates();
+</script>
+</body>
+</html>

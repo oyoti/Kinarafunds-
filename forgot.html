@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Reset Password — KNRA Funded</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+:root{--white:#ffffff;--off-white:#f8f7f4;--cream:#f2ede6;--charcoal:#1a1a1a;--mid:#4a4a4a;--light:#888888;--gold:#b8860b;--gold-light:#d4a017;--gold-pale:#fdf6e3;--accent:#c9a84c;--border:#e8e1d6;--green:#1a7a4a;--red:#c0392b;--error:#fef2f2;--error-text:#c0392b;}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'DM Sans',sans-serif;background:var(--off-white);color:var(--charcoal);min-height:100vh;display:flex;align-items:center;justify-content:center;}
+
+.auth-wrapper{display:flex;min-height:100vh;width:100%;}
+
+.auth-left{flex:1;background:var(--charcoal);display:flex;flex-direction:column;justify-content:space-between;padding:3rem;position:relative;overflow:hidden;}
+.auth-left::before{content:'RESET';position:absolute;font-family:'Playfair Display',serif;font-size:12rem;font-weight:900;color:rgba(255,255,255,0.03);bottom:-1rem;left:-1rem;line-height:1;pointer-events:none;}
+.auth-left::after{content:'';position:absolute;top:-80px;right:-80px;width:450px;height:450px;background:radial-gradient(circle,rgba(184,134,11,0.12) 0%,transparent 70%);border-radius:50%;pointer-events:none;}
+.left-logo{font-family:'Playfair Display',serif;font-size:1.6rem;font-weight:900;color:var(--white);text-decoration:none;z-index:1;}
+.left-logo span{color:var(--gold);}
+.left-content{z-index:1;}
+.left-content h2{font-family:'Playfair Display',serif;font-size:2.2rem;font-weight:900;color:var(--white);line-height:1.1;margin-bottom:1rem;}
+.left-content h2 em{color:var(--gold);font-style:normal;}
+.left-content p{font-size:0.93rem;color:rgba(255,255,255,0.5);line-height:1.75;max-width:360px;font-weight:300;}
+.left-note{background:rgba(184,134,11,0.12);border:1px solid rgba(184,134,11,0.3);border-radius:10px;padding:1.2rem;z-index:1;}
+.left-note p{font-size:0.83rem;color:rgba(255,255,255,0.6);line-height:1.65;}
+.left-note strong{color:var(--gold);}
+
+.auth-right{flex:0 0 480px;background:var(--white);display:flex;align-items:center;justify-content:center;padding:3rem;min-height:100vh;}
+.auth-box{width:100%;max-width:380px;}
+.auth-box h1{font-family:'Playfair Display',serif;font-size:1.9rem;font-weight:900;color:var(--charcoal);margin-bottom:0.4rem;}
+.auth-box .subtitle{font-size:0.9rem;color:var(--light);margin-bottom:2rem;font-weight:300;}
+.auth-box .subtitle a{color:var(--gold);text-decoration:none;font-weight:600;}
+.back-link{display:inline-flex;align-items:center;gap:0.5rem;font-size:0.85rem;color:var(--mid);text-decoration:none;margin-bottom:2rem;transition:color 0.2s;}
+.back-link:hover{color:var(--gold);}
+
+.form-group{margin-bottom:1.25rem;}
+.form-group label{display:block;font-size:0.82rem;font-weight:600;color:var(--mid);margin-bottom:0.5rem;letter-spacing:0.3px;}
+.form-group input{width:100%;padding:0.8rem 1rem;border:1.5px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:0.93rem;color:var(--charcoal);background:var(--off-white);transition:all 0.2s;outline:none;}
+.form-group input:focus{border-color:var(--gold);background:var(--white);box-shadow:0 0 0 3px rgba(184,134,11,0.08);}
+.form-group input.error{border-color:var(--red);background:var(--error);}
+.field-error{font-size:0.78rem;color:var(--error-text);margin-top:0.35rem;display:none;}
+.field-error.show{display:block;}
+
+.btn-submit{width:100%;padding:0.95rem;background:var(--charcoal);color:var(--white);border:none;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:0.95rem;font-weight:700;cursor:pointer;transition:all 0.2s;}
+.btn-submit:hover{background:var(--gold);}
+.btn-submit:disabled{opacity:0.6;cursor:not-allowed;}
+.btn-submit .spinner{display:none;width:18px;height:18px;border:2px solid rgba(255,255,255,0.3);border-top-color:white;border-radius:50%;animation:spin 0.7s linear infinite;margin:0 auto;}
+.btn-submit.loading .btn-text{display:none;}
+.btn-submit.loading .spinner{display:block;}
+
+.alert{padding:0.9rem 1rem;border-radius:8px;font-size:0.86rem;margin-bottom:1.2rem;display:none;line-height:1.5;}
+.alert.show{display:block;}
+.alert.error{background:var(--error);color:var(--error-text);border:1px solid #f5c6cb;}
+.alert.success{background:#e8f5ed;color:var(--green);border:1px solid #c3e6cb;}
+
+/* SUCCESS STATE */
+.success-state{display:none;text-align:center;padding:2rem 0;}
+.success-state.show{display:block;}
+.success-icon{font-size:3.5rem;margin-bottom:1.2rem;}
+.success-state h3{font-family:'Playfair Display',serif;font-size:1.5rem;font-weight:700;color:var(--charcoal);margin-bottom:0.75rem;}
+.success-state p{font-size:0.9rem;color:var(--mid);line-height:1.7;margin-bottom:1.5rem;}
+.success-state .resend-row{font-size:0.83rem;color:var(--light);}
+.success-state .resend-row a{color:var(--gold);text-decoration:none;font-weight:600;cursor:pointer;}
+
+.db-notice{background:var(--gold-pale);border:1px solid var(--accent);border-radius:8px;padding:0.85rem 1rem;margin-bottom:1.2rem;font-size:0.81rem;color:var(--mid);}
+.db-notice strong{color:var(--gold);}
+
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.auth-box{animation:fadeUp 0.5s ease both;}
+
+@media(max-width:900px){.auth-left{display:none;}.auth-right{flex:1;}}
+@media(max-width:480px){.auth-right{padding:2rem 1.5rem;}}
+</style>
+</head>
+<body>
+<div class="auth-wrapper">
+
+  <div class="auth-left">
+    <a href="index.html" class="left-logo">KNRA<span>.</span>FUNDED</a>
+    <div class="left-content">
+      <h2>Reset Your<br/><em>Password</em></h2>
+      <p>We'll send a password reset link to your registered email address. Check your inbox and follow the instructions.</p>
+    </div>
+    <div class="left-note">
+      <p><strong>Tip:</strong> If you don't see the email within a few minutes, check your spam or junk folder. Reset links expire after <strong>15 minutes</strong> for your security.</p>
+    </div>
+  </div>
+
+  <div class="auth-right">
+    <div class="auth-box">
+
+      <a href="login.html" class="back-link">← Back to Login</a>
+      <h1>Forgot Password?</h1>
+      <p class="subtitle">Enter your email and we'll send you a reset link.</p>
+
+      <div class="db-notice">
+        <strong>🔌 Database:</strong> Update <code>API_ENDPOINT</code> in the &lt;script&gt; below to activate password reset emails.
+      </div>
+
+      <div class="alert" id="alertBox"></div>
+
+      <!-- FORM -->
+      <div id="formWrap">
+        <form id="resetForm" novalidate>
+          <div class="form-group">
+            <label for="email">Email Address</label>
+            <input type="email" id="email" name="email" placeholder="you@example.com" autocomplete="email"/>
+            <div class="field-error" id="emailErr">Please enter a valid email address.</div>
+          </div>
+          <button type="submit" class="btn-submit" id="submitBtn">
+            <span class="btn-text">Send Reset Link →</span>
+            <div class="spinner"></div>
+          </button>
+        </form>
+        <p style="text-align:center;font-size:0.84rem;color:var(--light);margin-top:1.5rem;">
+          Remembered it? <a href="login.html" style="color:var(--gold);font-weight:600;text-decoration:none;">Log in</a>
+        </p>
+      </div>
+
+      <!-- SUCCESS STATE -->
+      <div class="success-state" id="successState">
+        <div class="success-icon">📧</div>
+        <h3>Check Your Inbox</h3>
+        <p>We've sent a password reset link to <strong id="sentEmail"></strong>. It expires in 15 minutes.</p>
+        <div class="resend-row">Didn't receive it? <a id="resendBtn">Resend email</a></div>
+        <p style="margin-top:1.5rem;font-size:0.82rem;color:var(--light);">
+          <a href="login.html" style="color:var(--gold);font-weight:600;text-decoration:none;">← Back to Login</a>
+        </p>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+// ─── DATABASE CONFIG ───────────────────────────────────────────────────────────
+// Replace with your backend API endpoint.
+// Expected: POST /api/auth/forgot-password  →  { success: true } or { error }
+const API_ENDPOINT = 'https://YOUR_BACKEND_URL/api/auth/forgot-password';
+// ──────────────────────────────────────────────────────────────────────────────
+
+const form = document.getElementById('resetForm');
+const submitBtn = document.getElementById('submitBtn');
+const alertBox = document.getElementById('alertBox');
+let lastEmail = '';
+
+function showAlert(msg, type = 'error') {
+  alertBox.textContent = msg;
+  alertBox.className = 'alert show ' + type;
+}
+
+async function sendReset(email) {
+  submitBtn.classList.add('loading');
+  submitBtn.disabled = true;
+  alertBox.className = 'alert';
+
+  try {
+    const res = await fetch(API_ENDPOINT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email })
+    });
+    const data = await res.json();
+
+    if (res.ok && data.success) {
+      document.getElementById('formWrap').style.display = 'none';
+      document.getElementById('sentEmail').textContent = email;
+      document.getElementById('successState').classList.add('show');
+    } else {
+      showAlert(data.error || 'Something went wrong. Please try again.');
+    }
+  } catch (err) {
+    showAlert('Could not reach the server. Please update the API endpoint in the script section.');
+  } finally {
+    submitBtn.classList.remove('loading');
+    submitBtn.disabled = false;
+  }
+}
+
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const emailInput = document.getElementById('email');
+  const emailErr = document.getElementById('emailErr');
+  const valid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailInput.value.trim());
+  emailInput.classList.toggle('error', !valid);
+  emailErr.classList.toggle('show', !valid);
+  if (!valid) return;
+
+  lastEmail = emailInput.value.trim();
+  await sendReset(lastEmail);
+});
+
+document.getElementById('resendBtn').addEventListener('click', async () => {
+  if (!lastEmail) return;
+  document.getElementById('successState').classList.remove('show');
+  document.getElementById('formWrap').style.display = 'block';
+  document.getElementById('email').value = lastEmail;
+  await sendReset(lastEmail);
+});
+</script>
+</body>
+</html>

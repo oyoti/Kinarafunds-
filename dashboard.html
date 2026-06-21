@@ -1,0 +1,991 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>KNRA | Dashboard</title>
+  <link rel="icon" href="data:,">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Playfair+Display:wght@600&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --gold: #c9a84c;
+      --gold-light: #e8c96d;
+      --gold-dim: rgba(201,168,76,0.15);
+      --bg: #0a0a0a;
+      --surface: #111111;
+      --surface2: #1a1a1a;
+      --border: rgba(201,168,76,0.2);
+      --text: #f0f0f0;
+      --text-muted: #888;
+      --red: #e05252;
+      --green: #4caf82;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      display: flex;
+      min-height: 100vh;
+    }
+
+    /* ── Sidebar ── */
+    .sidebar {
+      width: 240px;
+      min-height: 100vh;
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      position: fixed;
+      top: 0; left: 0;
+      z-index: 100;
+    }
+
+    .sidebar-logo {
+      padding: 28px 24px 20px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .sidebar-logo h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.5rem;
+      color: var(--gold);
+      letter-spacing: 2px;
+    }
+
+    .sidebar-logo p {
+      font-size: 0.68rem;
+      color: var(--text-muted);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-top: 2px;
+    }
+
+    .sidebar-nav { flex: 1; padding: 16px 0; }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 24px;
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 0.875rem;
+      font-weight: 500;
+      transition: all 0.2s;
+      cursor: pointer;
+      border: none;
+      background: none;
+      width: 100%;
+    }
+
+    .nav-item:hover { color: var(--text); background: var(--gold-dim); }
+    .nav-item.active {
+      color: var(--gold);
+      background: var(--gold-dim);
+      border-right: 2px solid var(--gold);
+    }
+    .nav-item svg { width: 18px; height: 18px; flex-shrink: 0; }
+
+    .sidebar-footer {
+      padding: 16px 24px;
+      border-top: 1px solid var(--border);
+    }
+
+    .user-info { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+
+    .user-avatar {
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      background: var(--gold-dim);
+      border: 1px solid var(--gold);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.8rem; font-weight: 600; color: var(--gold);
+    }
+
+    .user-name { font-size: 0.8rem; font-weight: 600; }
+    .user-role { font-size: 0.68rem; color: var(--text-muted); }
+
+    .logout-btn {
+      width: 100%;
+      padding: 8px;
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text-muted);
+      font-size: 0.78rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+    .logout-btn:hover { border-color: var(--red); color: var(--red); }
+    .logout-btn svg { width: 14px; height: 14px; }
+
+    /* ── Main ── */
+    .main {
+      margin-left: 240px;
+      flex: 1;
+      padding: 32px;
+      max-width: calc(100vw - 240px);
+    }
+
+    /* ── Page Header ── */
+    .page-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 32px;
+    }
+
+    .page-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.6rem;
+      color: var(--gold);
+    }
+
+    .page-subtitle { font-size: 0.82rem; color: var(--text-muted); margin-top: 4px; }
+
+    .header-date {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .header-date svg { width: 14px; height: 14px; color: var(--gold); }
+
+    /* ── Hero Banner ── */
+    .hero {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 28px 32px;
+      margin-bottom: 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero::before {
+      content: 'KNRA';
+      position: absolute;
+      font-family: 'Playfair Display', serif;
+      font-size: 10rem;
+      font-weight: 600;
+      color: rgba(201,168,76,0.04);
+      right: -1rem;
+      bottom: -1.5rem;
+      line-height: 1;
+      pointer-events: none;
+    }
+
+    .hero-text h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.7rem;
+      color: var(--text);
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .hero-text h2 span.name { color: var(--gold); }
+
+    .hero-wave {
+      width: 28px; height: 28px;
+      color: var(--gold);
+      flex-shrink: 0;
+    }
+
+    .hero-text p { font-size: 0.85rem; color: var(--text-muted); }
+
+    .hero-actions { display: flex; flex-direction: column; gap: 10px; align-items: flex-end; }
+
+    .btn {
+      padding: 10px 22px;
+      border-radius: 8px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      white-space: nowrap;
+    }
+
+    .btn svg { width: 15px; height: 15px; }
+
+    .btn-primary { background: var(--gold); color: #000; }
+    .btn-primary:hover { background: var(--gold-light); }
+
+    .btn-outline {
+      background: transparent;
+      color: var(--gold);
+      border: 1.5px solid var(--gold);
+    }
+    .btn-outline:hover { background: var(--gold-dim); }
+
+    /* ── Stats Grid ── */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 20px 22px;
+      text-decoration: none;
+      color: inherit;
+      display: block;
+      transition: all 0.2s;
+    }
+
+    .stat-card.clickable:hover {
+      border-color: var(--gold);
+      box-shadow: 0 4px 20px rgba(201,168,76,0.1);
+      transform: translateY(-2px);
+    }
+
+    .stat-label {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .stat-label svg { width: 13px; height: 13px; color: var(--gold); opacity: 0.8; }
+
+    .stat-value {
+      font-family: 'Playfair Display', serif;
+      font-size: 2rem;
+      color: var(--text);
+      line-height: 1;
+    }
+
+    .stat-value.null-state {
+      font-size: 0.9rem;
+      font-family: 'DM Sans', sans-serif;
+      color: var(--text-muted);
+      font-style: italic;
+      font-weight: 400;
+    }
+
+    .stat-sub {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-top: 6px;
+    }
+
+    /* ── Profit Card ── */
+    .profit-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 20px 22px;
+      grid-column: span 2;
+    }
+
+    .profit-rows { display: flex; flex-direction: column; gap: 6px; margin-top: 4px; }
+
+    .profit-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--surface2);
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-size: 0.82rem;
+    }
+
+    .p-label { display: flex; align-items: center; gap: 8px; color: var(--text-muted); }
+
+    .phase-badge-sm {
+      padding: 3px 8px;
+      border-radius: 20px;
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.3px;
+    }
+
+    .badge-p1 { background: rgba(201,168,76,0.15); color: var(--gold); border: 1px solid rgba(201,168,76,0.3); }
+    .badge-p2 { background: rgba(76,175,130,0.15); color: var(--green); border: 1px solid rgba(76,175,130,0.3); }
+    .badge-funded { background: rgba(76,175,130,0.25); color: var(--green); border: 1px solid var(--green); }
+
+    .p-val { font-weight: 700; font-size: 0.88rem; }
+    .p-val.pos { color: var(--green); }
+    .p-val.neg { color: var(--red); }
+    .p-val.zero { color: var(--text-muted); }
+
+    .profit-divider { height: 1px; background: var(--border); margin: 8px 0; }
+
+    .profit-total-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 6px 14px;
+    }
+
+    .pt-label { font-size: 0.8rem; font-weight: 600; color: var(--text-muted); }
+
+    .pt-val {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.3rem;
+      font-weight: 700;
+    }
+
+    .pt-val.pos { color: var(--green); }
+    .pt-val.neg { color: var(--red); }
+    .pt-val.zero { color: var(--text-muted); }
+
+    /* ── Payout Card ── */
+    .payout-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 20px 22px;
+      grid-column: span 3;
+    }
+
+    .payout-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .payout-item:last-child { border-bottom: none; }
+
+    .payout-date {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.2rem;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+
+    .payout-sub { font-size: 0.75rem; color: var(--text-muted); }
+
+    .payout-note {
+      font-size: 0.75rem;
+      font-weight: 600;
+      margin-top: 4px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .payout-note svg { width: 13px; height: 13px; }
+
+    .payout-badge {
+      background: var(--gold-dim);
+      color: var(--gold);
+      border: 1px solid rgba(201,168,76,0.3);
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 4px 12px;
+      border-radius: 20px;
+      white-space: nowrap;
+      margin-left: 16px;
+    }
+
+    .payout-none {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      font-style: italic;
+      padding: 8px 0;
+    }
+
+    /* ── Nav Cards ── */
+    .nav-cards {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+
+    .nav-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 22px;
+      text-decoration: none;
+      color: inherit;
+      display: block;
+      transition: all 0.2s;
+    }
+
+    .nav-card:hover {
+      border-color: var(--gold);
+      box-shadow: 0 4px 20px rgba(201,168,76,0.1);
+      transform: translateY(-2px);
+    }
+
+    .nc-icon {
+      width: 42px; height: 42px;
+      background: var(--gold-dim);
+      border: 1px solid rgba(201,168,76,0.3);
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 14px;
+    }
+    .nc-icon svg { width: 20px; height: 20px; color: var(--gold); }
+
+    .nc-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1rem;
+      color: var(--text);
+      margin-bottom: 6px;
+    }
+
+    .nc-desc {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+
+    .nc-arrow {
+      margin-top: 14px;
+      font-size: 0.75rem;
+      color: var(--gold);
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .nc-arrow svg { width: 13px; height: 13px; }
+
+    /* ── Skeleton ── */
+    .skeleton {
+      background: linear-gradient(90deg, var(--surface2) 25%, #222 50%, var(--surface2) 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s infinite;
+      border-radius: 6px;
+    }
+
+    @keyframes shimmer {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
+    /* ── Toast ── */
+    .toast {
+      position: fixed;
+      bottom: 24px; right: 24px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 18px;
+      font-size: 0.82rem;
+      color: var(--text);
+      z-index: 999;
+      transform: translateY(80px);
+      opacity: 0;
+      transition: all 0.3s;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .toast svg { width: 15px; height: 15px; flex-shrink: 0; }
+    .toast.show { transform: translateY(0); opacity: 1; }
+    .toast.error { border-color: var(--red); color: var(--red); }
+
+    @media (max-width: 1100px) {
+      .stats-grid { grid-template-columns: repeat(2, 1fr); }
+      .profit-card { grid-column: span 2; }
+      .payout-card { grid-column: span 2; }
+      .nav-cards { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    @media (max-width: 768px) {
+      .sidebar { transform: translateX(-100%); }
+      .main { margin-left: 0; max-width: 100vw; padding: 20px; }
+      .stats-grid { grid-template-columns: 1fr; }
+      .profit-card, .payout-card { grid-column: span 1; }
+      .nav-cards { grid-template-columns: 1fr; }
+      .hero { flex-direction: column; gap: 20px; align-items: flex-start; }
+      .hero-actions { align-items: flex-start; flex-direction: row; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── Sidebar ── -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <h1>KNRA</h1>
+    <p>Trading Platform</p>
+  </div>
+  <nav class="sidebar-nav">
+    <a href="dashboard.html" class="nav-item active">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+      Dashboard
+    </a>
+    <a href="accounts.html" class="nav-item">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+      Accounts
+    </a>
+    <a href="transactions.html" class="nav-item">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+      Transactions
+    </a>
+    <a href="payouts.html" class="nav-item">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+      Payouts
+    </a>
+    <a href="referral.html" class="nav-item">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+      Referral
+    </a>
+    <a href="certificates.html" class="nav-item">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/></svg>
+      Certificates
+    </a>
+    <a href="profile.html" class="nav-item">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+      Profile
+    </a>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="user-info">
+      <div class="user-avatar" id="sidebarAvatar">--</div>
+      <div>
+        <div class="user-name" id="sidebarName">Loading...</div>
+        <div class="user-role" id="sidebarRole">Trader</div>
+      </div>
+    </div>
+    <button class="logout-btn" onclick="logout()">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+      Sign Out
+    </button>
+  </div>
+</aside>
+
+<!-- ── Main ── -->
+<main class="main">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Dashboard</h1>
+      <p class="page-subtitle" id="heroSub">Loading your trading overview…</p>
+    </div>
+    <div class="header-date" id="todayDate">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+    </div>
+  </div>
+
+  <!-- Hero -->
+  <div class="hero">
+    <div class="hero-text">
+      <h2>
+        Welcome back, <span class="name" id="heroName">—</span>
+        <!-- Hand wave SVG -->
+        <svg class="hero-wave" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+            d="M7 11.5V7a1.5 1.5 0 013 0v4m0-4V5.5a1.5 1.5 0 013 0V11m0-3.5a1.5 1.5 0 013 0V11m0 0v3a5 5 0 01-5 5h-1a5 5 0 01-5-5V9.5"/>
+        </svg>
+      </h2>
+      <p>Here is a snapshot of your trading performance.</p>
+    </div>
+    <div class="hero-actions">
+      <a href="accounts.html" class="btn btn-primary">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+        View Accounts
+      </a>
+      <a href="challenges.html" class="btn btn-outline">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+        Start Challenge
+      </a>
+    </div>
+  </div>
+
+  <!-- Stats Grid -->
+  <div class="stats-grid">
+
+    <!-- Active Accounts -->
+    <a href="accounts.html" class="stat-card clickable" id="cardActiveAccounts">
+      <div class="stat-label">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 8v8m-4-5v5m-4-2v2m-2 4h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+        Active Accounts
+      </div>
+      <div id="valActiveAccounts" class="skeleton" style="width:60px;height:36px;margin-bottom:6px;"></div>
+      <div id="subActiveAccounts" class="stat-sub"></div>
+    </a>
+
+    <!-- Total Profit -->
+    <div class="profit-card">
+      <div class="stat-label">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"/></svg>
+        Total Profit / PnL
+      </div>
+      <div class="profit-rows" id="profitRows">
+        <div class="skeleton" style="height:36px;"></div>
+        <div class="skeleton" style="height:36px;margin-top:6px;"></div>
+      </div>
+      <div id="profitDivider" class="profit-divider" style="display:none;"></div>
+      <div id="profitTotalRow" class="profit-total-row" style="display:none;">
+        <span class="pt-label">Cumulative Total</span>
+        <span class="pt-val" id="profitTotalVal">—</span>
+      </div>
+    </div>
+
+    <!-- Next Payout -->
+    <div class="payout-card">
+      <div class="stat-label">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+        Next Payout Date
+      </div>
+      <div id="payoutContent">
+        <div class="skeleton" style="width:200px;height:24px;margin-top:8px;"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Nav Cards -->
+  <div class="nav-cards">
+
+    <a href="accounts.html" class="nav-card">
+      <div class="nc-icon">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+      </div>
+      <div class="nc-title">My Accounts</div>
+      <div class="nc-desc">View active and breached accounts. Track progress, drawdown and performance metrics.</div>
+      <div class="nc-arrow">
+        Open Accounts
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+      </div>
+    </a>
+
+    <a href="transactions.html" class="nav-card">
+      <div class="nc-icon">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
+      </div>
+      <div class="nc-title">Transactions</div>
+      <div class="nc-desc">Full billing history, deposits, withdrawals and challenge purchases.</div>
+      <div class="nc-arrow">
+        View History
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+      </div>
+    </a>
+
+    <a href="payouts.html" class="nav-card">
+      <div class="nc-icon">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+      </div>
+      <div class="nc-title">Payouts</div>
+      <div class="nc-desc">Request and track your profit payouts. 24-hour processing on funded accounts.</div>
+      <div class="nc-arrow">
+        Manage Payouts
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+      </div>
+    </a>
+
+    <a href="referral.html" class="nav-card">
+      <div class="nc-icon">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+      </div>
+      <div class="nc-title">Refer &amp; Earn</div>
+      <div class="nc-desc">Share your referral link and earn commission on every successful challenge purchase.</div>
+      <div class="nc-arrow">
+        Start Referring
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+      </div>
+    </a>
+
+    <a href="certificates.html" class="nav-card">
+      <div class="nc-icon">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/></svg>
+      </div>
+      <div class="nc-title">Certificates</div>
+      <div class="nc-desc">Download your funded trader certificates and share your achievements.</div>
+      <div class="nc-arrow">
+        View Certificates
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+      </div>
+    </a>
+
+  </div>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  const SUPA_URL = 'https://hhkztoklgeozegehcsmc.supabase.co';
+  const ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhoa3p0b2tsZ2VvemVnZWhjc21jIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAyMjI1MjEsImV4cCI6MjA5NTc5ODUyMX0.fWs-vU_gIXLNJUh1DA1edrqKh7tc3wv9hjT-ZhhjytY';
+
+  async function dbGet(endpoint) {
+    const token = localStorage.getItem('knra_token') || ANON_KEY;
+    const res = await fetch(`${SUPA_URL}/rest/v1${endpoint}`, {
+      headers: {
+        'apikey': ANON_KEY,
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      }
+    });
+    if (!res.ok) {
+      const e = await res.json().catch(() => ({}));
+      throw new Error(e.message || `HTTP ${res.status}`);
+    }
+    return res.json();
+  }
+
+  function fmtMoney(n) {
+    if (n == null) return '—';
+    const abs = Math.abs(n);
+    const s = '$' + abs.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    return (n < 0 ? '-' : '') + s;
+  }
+
+  function fmtDate(iso) {
+    if (!iso) return '—';
+    return new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+  }
+
+  function addDays(dateVal, days) {
+    const d = new Date(dateVal);
+    d.setDate(d.getDate() + days);
+    return d;
+  }
+
+  function daysFromNow(dateObj) {
+    const now = new Date(); now.setHours(0,0,0,0);
+    const target = new Date(dateObj); target.setHours(0,0,0,0);
+    return Math.round((target - now) / (1000 * 60 * 60 * 24));
+  }
+
+  function pnlClass(n) { return n > 0 ? 'pos' : n < 0 ? 'neg' : 'zero'; }
+  function isFunded(phase) { return /fund/i.test(String(phase || '')); }
+
+  function phaseBadge(phase) {
+    const p = String(phase || '').toLowerCase();
+    if (isFunded(p)) return '<span class="phase-badge-sm badge-funded">Funded</span>';
+    if (p.includes('2')) return '<span class="phase-badge-sm badge-p2">Phase 2</span>';
+    return '<span class="phase-badge-sm badge-p1">Phase 1</span>';
+  }
+
+  function logout() {
+    localStorage.removeItem('knra_user');
+    localStorage.removeItem('knra_session');
+    localStorage.removeItem('knra_token');
+    window.location.href = 'login.html';
+  }
+
+  function showToast(msg, type = '') {
+    const t = document.getElementById('toast');
+    const icon = type === 'error'
+      ? `<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>`
+      : `<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>`;
+    t.innerHTML = icon + msg;
+    t.className = `toast ${type} show`;
+    setTimeout(() => t.classList.remove('show'), 3000);
+  }
+
+  async function loadDashboard() {
+    try {
+      const user = JSON.parse(localStorage.getItem('knra_user') || '{}');
+      if (!user || !user.id) { window.location.href = 'login.html'; return; }
+
+      // Sidebar & hero
+      const name = `${user.first_name || ''} ${user.last_name || ''}`.trim() || user.email || 'Trader';
+      document.getElementById('heroName').textContent = user.first_name || name.split(' ')[0] || 'Trader';
+      document.getElementById('heroSub').textContent = 'Here is a snapshot of your trading performance.';
+      document.getElementById('sidebarName').textContent = name;
+      document.getElementById('sidebarRole').textContent = user.role || 'Trader';
+      document.getElementById('sidebarAvatar').textContent = name.charAt(0).toUpperCase();
+
+      // Date
+      const dateEl = document.getElementById('todayDate');
+      dateEl.innerHTML = `
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+        ${new Date().toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })}
+      `;
+
+      // ── 1. Fetch active accounts ──
+      const accounts = await dbGet(
+        `/accounts?user_id=eq.${user.id}&status=eq.active&select=id,account_ref,phase,size,start_date`
+      );
+
+      // ── 2. Active Accounts card ──
+      const valEl = document.getElementById('valActiveAccounts');
+      const subEl = document.getElementById('subActiveAccounts');
+
+      if (accounts.length === 0) {
+        valEl.className = 'stat-value null-state';
+        valEl.textContent = 'None';
+        subEl.textContent = 'No active accounts yet';
+        const card = document.getElementById('cardActiveAccounts');
+        card.style.pointerEvents = 'none';
+        card.style.opacity = '0.5';
+      } else {
+        valEl.className = 'stat-value';
+        valEl.textContent = accounts.length;
+        const p1 = accounts.filter(a => { const p = String(a.phase||'').toLowerCase(); return !isFunded(p) && (p.includes('1')||p==='phase_1'); }).length;
+        const p2 = accounts.filter(a => { const p = String(a.phase||'').toLowerCase(); return !isFunded(p) && (p.includes('2')||p==='phase_2'); }).length;
+        const fu = accounts.filter(a => isFunded(a.phase)).length;
+        const parts = [];
+        if (p1) parts.push(`${p1} Phase 1`);
+        if (p2) parts.push(`${p2} Phase 2`);
+        if (fu) parts.push(`${fu} Funded`);
+        subEl.textContent = parts.join(' · ') || 'Click to view';
+      }
+
+      // ── 3. Profit card ──
+      const profitRowsEl   = document.getElementById('profitRows');
+      const profitDivider  = document.getElementById('profitDivider');
+      const profitTotalRow = document.getElementById('profitTotalRow');
+      const profitTotalVal = document.getElementById('profitTotalVal');
+
+      if (accounts.length === 0) {
+        profitRowsEl.innerHTML = '<div style="font-size:0.82rem;color:var(--text-muted);font-style:italic;padding:8px 14px;">No active accounts to display.</div>';
+      } else {
+        const ids = accounts.map(a => a.id).join(',');
+        const perfs = await dbGet(`/account_performance?account_id=in.(${ids})&select=account_id,current_profit`);
+
+        const perfMap = {};
+        perfs.forEach(p => { perfMap[p.account_id] = parseFloat(p.current_profit) || 0; });
+
+        let cumulative = 0;
+        let rowsHtml = '';
+
+        accounts.forEach(acc => {
+          const pnl  = perfMap[acc.id] ?? 0;
+          cumulative += pnl;
+          const ref  = acc.account_ref || `ACC-${acc.id}`;
+          const sign = pnl >= 0 ? '+' : '';
+          rowsHtml += `
+            <div class="profit-row">
+              <span class="p-label">
+                ${phaseBadge(acc.phase)}
+                <span style="font-size:0.78rem;">${ref}</span>
+              </span>
+              <span class="p-val ${pnlClass(pnl)}">${sign}${fmtMoney(pnl)}</span>
+            </div>`;
+        });
+
+        profitRowsEl.innerHTML = rowsHtml;
+        profitDivider.style.display  = 'block';
+        profitTotalRow.style.display = 'flex';
+        profitTotalVal.className     = 'pt-val ' + pnlClass(cumulative);
+        profitTotalVal.textContent   = (cumulative >= 0 ? '+' : '') + fmtMoney(cumulative);
+      }
+
+      // ── 4. Next Payout card ──
+      const payoutEl   = document.getElementById('payoutContent');
+      const fundedAccs = accounts.filter(a => isFunded(a.phase));
+
+      if (fundedAccs.length === 0) {
+        payoutEl.innerHTML = `
+          <div class="payout-none">N/A — No funded accounts.</div>
+          <div class="payout-sub" style="margin-top:6px;">Complete Phase 1 &amp; Phase 2 to unlock payouts.</div>`;
+      } else {
+        const fundedIds = fundedAccs.map(a => a.id).join(',');
+        let lastPayoutMap = {};
+
+        try {
+          const payouts = await dbGet(
+            `/payouts?account_id=in.(${fundedIds})&status=eq.paid&select=account_id,processed_at&order=processed_at.desc`
+          );
+          payouts.forEach(p => {
+            if (!lastPayoutMap[p.account_id]) lastPayoutMap[p.account_id] = p.processed_at;
+          });
+        } catch (_) {}
+
+        let html = '';
+
+        fundedAccs.forEach(acc => {
+          const ref = acc.account_ref || `ACC-${acc.id}`;
+          const hasLastPayout = !!lastPayoutMap[acc.id];
+          const baseIso   = hasLastPayout ? lastPayoutMap[acc.id] : acc.start_date;
+          const baseLabel = hasLastPayout ? 'After last payout' : 'From funded date';
+
+          if (!baseIso) {
+            html += `
+              <div class="payout-item">
+                <div>
+                  <div class="payout-date" style="color:var(--text-muted);">N/A</div>
+                  <div class="payout-sub">${ref} · No start date recorded</div>
+                </div>
+              </div>`;
+            return;
+          }
+
+          const nextDate = addDays(baseIso, 30);
+          const days     = daysFromNow(nextDate);
+          const dateStr  = fmtDate(nextDate.toISOString());
+
+          let color, statusLabel, noteHtml = '';
+
+          if (days < 0) {
+            color = 'var(--green)';
+            statusLabel = `${Math.abs(days)} day${Math.abs(days)===1?'':'s'} overdue`;
+            noteHtml = `
+              <div class="payout-note" style="color:var(--green);">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                Payout available — request in Payouts.
+              </div>`;
+          } else if (days === 0) {
+            color = 'var(--gold)';
+            statusLabel = 'Due today!';
+            noteHtml = `
+              <div class="payout-note" style="color:var(--gold);">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>
+                Payout available today!
+              </div>`;
+          } else {
+            color = 'var(--text)';
+            statusLabel = `In ${days} day${days===1?'':'s'}`;
+          }
+
+          html += `
+            <div class="payout-item">
+              <div style="flex:1;">
+                <div class="payout-date" style="color:${color};">${dateStr}</div>
+                <div class="payout-sub">${ref} · ${baseLabel} · ${statusLabel}</div>
+                ${noteHtml}
+              </div>
+              <span class="payout-badge">80% split</span>
+            </div>`;
+        });
+
+        payoutEl.innerHTML = html;
+      }
+
+    } catch (err) {
+      console.error('Dashboard error:', err);
+      showToast(`Error: ${err.message}`, 'error');
+      document.getElementById('heroSub').textContent = 'Could not load dashboard data.';
+      document.getElementById('payoutContent').innerHTML =
+        `<div class="payout-none" style="color:var(--red);">
+          <svg style="width:14px;height:14px;vertical-align:middle;margin-right:4px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          ${err.message}
+        </div>`;
+      document.getElementById('profitRows').innerHTML =
+        `<div style="font-size:0.82rem;color:var(--red);padding:8px 14px;display:flex;align-items:center;gap:6px;">
+          <svg style="width:14px;height:14px;flex-shrink:0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          ${err.message}
+        </div>`;
+    }
+  }
+
+  loadDashboard();
+</script>
+</body>
+</html>

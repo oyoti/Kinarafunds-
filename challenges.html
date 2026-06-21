@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Challenges — KNRA Funded</title>
+<link rel="icon" href="data:,">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="shared.css"/>
+<style>
+/* ── Page hero ───────────────────────────────────────────────────────────── */
+.page-hero{background:var(--charcoal);border-radius:16px;padding:2rem 2.5rem;margin-bottom:2rem;position:relative;overflow:hidden;}
+.page-hero::before{content:'CHALLENGE';position:absolute;font-family:'Playfair Display',serif;font-size:10rem;font-weight:900;color:rgba(255,255,255,0.03);right:-1rem;bottom:-2rem;line-height:1;pointer-events:none;white-space:nowrap;}
+.page-hero h2{font-family:'Playfair Display',serif;font-size:1.9rem;font-weight:900;color:white;margin-bottom:0.4rem;}
+.page-hero h2 span{color:var(--gold);}
+.page-hero p{font-size:0.9rem;color:rgba(255,255,255,0.45);font-weight:300;max-width:560px;line-height:1.7;}
+
+/* ── Rules summary banner ────────────────────────────────────────────────── */
+.rules-banner{
+  display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;
+  margin-bottom:2rem;
+}
+.rule-pill{
+  background:var(--white);border:1.5px solid var(--border);
+  border-radius:12px;padding:1rem 1.2rem;
+  display:flex;flex-direction:column;gap:0.3rem;
+}
+.rule-pill .rp-icon{font-size:1.4rem;}
+.rule-pill .rp-label{font-size:0.72rem;color:var(--light);font-weight:600;text-transform:uppercase;letter-spacing:0.5px;}
+.rule-pill .rp-value{font-size:0.95rem;font-weight:700;color:var(--charcoal);}
+.rule-pill .rp-sub{font-size:0.75rem;color:var(--light);line-height:1.4;}
+
+/* ── Funded freedom banner ───────────────────────────────────────────────── */
+.freedom-banner{
+  background:linear-gradient(135deg,var(--charcoal) 0%,#2a2a2a 100%);
+  border:1.5px solid rgba(184,134,11,0.4);
+  border-radius:14px;padding:1.4rem 1.8rem;
+  margin-bottom:2rem;
+  display:flex;align-items:center;gap:1.2rem;
+}
+.freedom-banner .fb-icon{font-size:2.2rem;flex-shrink:0;}
+.freedom-banner .fb-text h4{
+  font-family:'Playfair Display',serif;font-size:1.05rem;font-weight:700;
+  color:var(--gold);margin-bottom:0.3rem;
+}
+.freedom-banner .fb-text p{font-size:0.84rem;color:rgba(255,255,255,0.6);line-height:1.65;}
+.freedom-banner .fb-text p strong{color:white;}
+
+/* ── Filter tabs ─────────────────────────────────────────────────────────── */
+.filter-bar{display:flex;align-items:center;gap:0.6rem;margin-bottom:1.8rem;flex-wrap:wrap;}
+.filter-tab{padding:0.5rem 1.2rem;border-radius:30px;border:1.5px solid var(--border);background:var(--white);font-size:0.83rem;font-weight:600;color:var(--mid);cursor:pointer;transition:all 0.2s;}
+.filter-tab:hover{border-color:var(--gold);color:var(--gold);}
+.filter-tab.active{background:var(--charcoal);border-color:var(--charcoal);color:white;}
+.filter-tab.active-gold{background:var(--gold);border-color:var(--gold);color:black;}
+.filter-right{margin-left:auto;font-size:0.82rem;color:var(--light);}
+
+/* ── Challenge cards grid ────────────────────────────────────────────────── */
+.challenges-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.4rem;}
+
+.challenge-card{
+  background:var(--white);border:1.5px solid var(--border);
+  border-radius:16px;overflow:hidden;
+  transition:all 0.25s;cursor:pointer;
+  position:relative;display:flex;flex-direction:column;
+}
+.challenge-card:hover{
+  border-color:var(--gold);
+  box-shadow:0 8px 32px rgba(184,134,11,0.13);
+  transform:translateY(-3px);
+}
+.challenge-card.popular{border-color:var(--gold);}
+
+.popular-badge{
+  position:absolute;top:1rem;right:1rem;
+  background:var(--gold);color:black;
+  font-size:0.68rem;font-weight:800;
+  padding:3px 10px;border-radius:20px;
+  letter-spacing:0.5px;text-transform:uppercase;
+  z-index:1;
+}
+
+.card-strip{height:5px;width:100%;}
+.strip-green {background:linear-gradient(90deg,#1a7a4a,#2ecc71);}
+.strip-gold  {background:linear-gradient(90deg,#b8860b,#f1c40f);}
+.strip-blue  {background:linear-gradient(90deg,#1a4a8a,#3498db);}
+.strip-purple{background:linear-gradient(90deg,#6c3483,#9b59b6);}
+.strip-dark  {background:linear-gradient(90deg,#1a1a1a,#555555);}
+
+.card-body{padding:1.5rem 1.5rem 0.5rem;}
+.card-instrument{font-size:0.72rem;font-weight:700;color:var(--light);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:0.4rem;}
+.card-name{font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:900;color:var(--charcoal);margin-bottom:0.25rem;}
+.card-subtitle{font-size:0.81rem;color:var(--light);margin-bottom:1.2rem;line-height:1.55;}
+
+.card-price-row{display:flex;align-items:baseline;gap:0.35rem;margin-bottom:1.2rem;}
+.card-price{font-family:'Playfair Display',serif;font-size:2rem;font-weight:900;color:var(--charcoal);}
+.card-price-currency{font-size:1rem;color:var(--light);font-weight:600;}
+.card-price-note{font-size:0.75rem;color:var(--light);}
+
+.card-rules{list-style:none;display:flex;flex-direction:column;gap:0;}
+.card-rules li{
+  display:flex;justify-content:space-between;align-items:center;
+  font-size:0.81rem;padding:0.5rem 0;
+  border-bottom:1px solid var(--border);
+}
+.card-rules li:last-child{border-bottom:none;}
+.rule-label{color:var(--light);font-weight:500;}
+.rule-value{color:var(--charcoal);font-weight:700;text-align:right;}
+.rule-value.green{color:var(--green);}
+.rule-value.red  {color:var(--red);}
+.rule-value.gold {color:var(--gold);}
+
+/* Funded badge inside card */
+.funded-tag{
+  display:inline-flex;align-items:center;gap:0.35rem;
+  background:#e8f5ed;color:var(--green);
+  border:1px solid #c3e6cb;
+  border-radius:20px;font-size:0.72rem;font-weight:700;
+  padding:3px 10px;margin-bottom:1rem;
+}
+
+/* Profit split bar */
+.split-bar-wrap{margin:0.8rem 0 1.2rem;}
+.split-bar-label{display:flex;justify-content:space-between;font-size:0.75rem;color:var(--light);margin-bottom:0.4rem;}
+.split-bar{height:6px;border-radius:3px;background:var(--border);overflow:hidden;}
+.split-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--gold),#2ecc71);}
+
+.card-footer{padding:0 1.5rem 1.5rem;margin-top:auto;}
+.btn-start{
+  width:100%;padding:0.85rem;
+  background:var(--charcoal);color:white;
+  border:none;border-radius:8px;
+  font-family:'DM Sans',sans-serif;font-size:0.91rem;font-weight:700;
+  cursor:pointer;transition:all 0.2s;
+  text-align:center;display:block;text-decoration:none;
+}
+.btn-start:hover{background:var(--gold);color:black;}
+.btn-start.gold{background:var(--gold);color:black;}
+.btn-start.gold:hover{background:var(--charcoal);color:white;}
+
+/* ── Skeleton ────────────────────────────────────────────────────────────── */
+.skeleton-card{
+  background:var(--white);border:1.5px solid var(--border);
+  border-radius:16px;height:480px;overflow:hidden;position:relative;
+}
+.skeleton-card::after{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(90deg,transparent 0%,rgba(255,255,255,0.6) 50%,transparent 100%);
+  animation:shimmer 1.4s infinite;
+}
+@keyframes shimmer{0%{transform:translateX(-100%)}100%{transform:translateX(100%)}}
+
+/* ── Responsive ──────────────────────────────────────────────────────────── */
+@media(max-width:1100px){
+  .challenges-grid{grid-template-columns:repeat(2,1fr);}
+  .rules-banner{grid-template-columns:repeat(2,1fr);}
+}
+@media(max-width:680px){
+  .challenges-grid{grid-template-columns:1fr;}
+  .rules-banner{grid-template-columns:repeat(2,1fr);}
+  .page-hero h2{font-size:1.4rem;}
+  .freedom-banner{flex-direction:column;text-align:center;}
+}
+@media(max-width:420px){
+  .rules-banner{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+<div class="layout">
+  <aside class="sidebar" id="sidebar"></aside>
+  <main class="main">
+
+    <div class="topbar">
+      <div class="topbar-title">Start a Challenge</div>
+      <div class="topbar-right">
+        <div style="font-size:0.85rem;color:var(--mid);" id="todayDate"></div>
+      </div>
+    </div>
+
+    <div class="content">
+
+      <!-- PAGE HERO -->
+      <div class="page-hero">
+        <h2>Choose Your <span>Challenge</span></h2>
+        <p>
+          Pick a challenge size, follow the rules for 10 trading days, and unlock your
+          funded account. No leverage — pure skill. Digit instruments only.
+        </p>
+      </div>
+
+      <!-- UNIVERSAL RULES BANNER -->
+      <div class="rules-banner">
+        <div class="rule-pill">
+          <div class="rp-icon">📅</div>
+          <div class="rp-label">Min Trading Days</div>
+          <div class="rp-value">10 Days</div>
+          <div class="rp-sub">At least 5 of those must be profitable days</div>
+        </div>
+        <div class="rule-pill">
+          <div class="rp-icon">🎯</div>
+          <div class="rp-label">Risk Per Trade / Run</div>
+          <div class="rp-value">Max 2%</div>
+          <div class="rp-sub">Per single trade or digit run. No exceptions.</div>
+        </div>
+        <div class="rule-pill">
+          <div class="rp-icon">⚡</div>
+          <div class="rp-label">Leverage</div>
+          <div class="rp-value">No Leverage</div>
+          <div class="rp-sub">All accounts trade without leverage. Skill-based only.</div>
+        </div>
+        <div class="rule-pill">
+          <div class="rp-icon">🏆</div>
+          <div class="rp-label">Profit Target</div>
+          <div class="rp-value">50% of Balance</div>
+          <div class="rp-sub">Hit 50% profit to pass and get funded</div>
+        </div>
+      </div>
+
+      <!-- FUNDED FREEDOM BANNER -->
+      <div class="freedom-banner">
+        <div class="fb-icon">🚀</div>
+        <div class="fb-text">
+          <h4>Once Funded — No Profit Limits, Ever.</h4>
+          <p>
+            After passing your challenge, your funded account has
+            <strong>absolutely no cap on profits.</strong>
+            Generate as much as your strategy allows.
+            There is <strong>no upper limit</strong> — the more you make, the more you earn.
+            Only drawdown rules apply on funded accounts.
+          </p>
+        </div>
+      </div>
+
+      <!-- FILTER TABS -->
+      <div class="filter-bar">
+        <button class="filter-tab active" onclick="filterCards('all',this)">All Challenges</button>
+        <button class="filter-tab" onclick="filterCards('starter',this)">Starter</button>
+        <button class="filter-tab" onclick="filterCards('standard',this)">Standard</button>
+        <button class="filter-tab" onclick="filterCards('pro',this)">Pro</button>
+        <div class="filter-right" id="cardCount"></div>
+      </div>
+
+      <!-- CARDS GRID -->
+      <div class="challenges-grid" id="challengesGrid">
+        <div class="skeleton-card"></div>
+        <div class="skeleton-card"></div>
+        <div class="skeleton-card"></div>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<script src="config.js"></script>
+<script src="sidebar.js"></script>
+<script>
+requireAuth();
+renderSidebar('challenges');
+document.getElementById('todayDate').textContent = new Date().toLocaleDateString('en-GB',{
+  weekday:'short',day:'numeric',month:'short',year:'numeric'
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CHALLENGE DATA
+// Account sizes are fixed at a 1:20 ratio to the challenge fee
+// (e.g. $5 fee → $100 account, $200 fee → $4,000 account).
+// Replace with: const CHALLENGES = await API.get(API.ENDPOINTS.CHALLENGES);
+// when your backend is ready.
+// ─────────────────────────────────────────────────────────────────────────────
+const CHALLENGES = [
+  {
+    id:            'knra-starter-5',
+    tier:          'starter',
+    strip:         'strip-green',
+    name:          'Starter',
+    price:         5,
+    accountSize:   '$100',
+    profitTarget:  '$50  (50%)',
+    maxDrawdown:   '8%',
+    dailyDrawdown: '4%',
+    profitSplit:   70,
+    popular:       false,
+    subtitle:      'Start small, prove your edge. $100 funded account on pass.',
+  },
+  {
+    id:            'knra-starter-10',
+    tier:          'starter',
+    strip:         'strip-green',
+    name:          'Starter Plus',
+    price:         10,
+    accountSize:   '$200',
+    profitTarget:  '$100  (50%)',
+    maxDrawdown:   '8%',
+    dailyDrawdown: '4%',
+    profitSplit:   70,
+    popular:       false,
+    subtitle:      'Low cost entry to a $200 funded account.',
+  },
+  {
+    id:            'knra-standard-25',
+    tier:          'standard',
+    strip:         'strip-gold',
+    name:          'Standard',
+    price:         25,
+    accountSize:   '$500',
+    profitTarget:  '$250  (50%)',
+    maxDrawdown:   '8%',
+    dailyDrawdown: '4%',
+    profitSplit:   75,
+    popular:       true,
+    subtitle:      'Most popular. Balanced cost with serious payout potential.',
+  },
+  {
+    id:            'knra-standard-50',
+    tier:          'standard',
+    strip:         'strip-blue',
+    name:          'Standard Plus',
+    price:         50,
+    accountSize:   '$1,000',
+    profitTarget:  '$500  (50%)',
+    maxDrawdown:   '8%',
+    dailyDrawdown: '4%',
+    profitSplit:   75,
+    popular:       false,
+    subtitle:      'Scale up with a $1,000 funded account at 75% split.',
+  },
+  {
+    id:            'knra-pro-100',
+    tier:          'pro',
+    strip:         'strip-purple',
+    name:          'Pro',
+    price:         100,
+    accountSize:   '$2,000',
+    profitTarget:  '$1,000  (50%)',
+    maxDrawdown:   '8%',
+    dailyDrawdown: '4%',
+    profitSplit:   80,
+    popular:       false,
+    subtitle:      'Serious traders only. $2,000 funded with 80% profit split.',
+  },
+  {
+    id:            'knra-pro-200',
+    tier:          'pro',
+    strip:         'strip-dark',
+    name:          'Pro Elite',
+    price:         200,
+    accountSize:   '$4,000',
+    profitTarget:  '$2,000  (50%)',
+    maxDrawdown:   '8%',
+    dailyDrawdown: '4%',
+    profitSplit:   80,
+    popular:       false,
+    subtitle:      'Elite tier. $4,000 funded. Maximum earning potential, no profit cap.',
+  },
+];
+
+// ── Render cards ──────────────────────────────────────────────────────────────
+function renderCards(cards) {
+  const grid = document.getElementById('challengesGrid');
+  document.getElementById('cardCount').textContent =
+    `${cards.length} challenge${cards.length !== 1 ? 's' : ''} available`;
+
+  if (!cards.length) {
+    grid.innerHTML = `
+      <div style="grid-column:1/-1;text-align:center;padding:4rem;color:var(--light);">
+        No challenges found.
+      </div>`;
+    return;
+  }
+
+  grid.innerHTML = cards.map(c => `
+    <div class="challenge-card ${c.popular ? 'popular' : ''}"
+         data-tier="${c.tier}"
+         onclick="goToCheckout('${c.id}')">
+
+      ${c.popular ? '<div class="popular-badge">⭐ Most Popular</div>' : ''}
+      <div class="card-strip ${c.strip}"></div>
+
+      <div class="card-body">
+        <div class="card-instrument">Digit Instruments · KNRA1 – KNRA7</div>
+        <div class="card-name">${c.name}</div>
+        <div class="card-subtitle">${c.subtitle}</div>
+
+        <!-- Price -->
+        <div class="card-price-row">
+          <div class="card-price-currency">$</div>
+          <div class="card-price">${c.price}</div>
+          <div class="card-price-note">one-time challenge fee</div>
+        </div>
+
+        <!-- Funded tag -->
+        <div class="funded-tag">✅ Funded on pass · No profit cap</div>
+
+        <!-- Rules -->
+        <ul class="card-rules">
+          <li>
+            <span class="rule-label">Account Size</span>
+            <span class="rule-value gold">${c.accountSize}</span>
+          </li>
+          <li>
+            <span class="rule-label">Profit Target</span>
+            <span class="rule-value green">${c.profitTarget}</span>
+          </li>
+          <li>
+            <span class="rule-label">Max Drawdown</span>
+            <span class="rule-value red">${c.maxDrawdown}</span>
+          </li>
+          <li>
+            <span class="rule-label">Daily Drawdown</span>
+            <span class="rule-value red">${c.dailyDrawdown}</span>
+          </li>
+          <li>
+            <span class="rule-label">Min Trading Days</span>
+            <span class="rule-value">10 days</span>
+          </li>
+          <li>
+            <span class="rule-label">Profitable Days Needed</span>
+            <span class="rule-value green">5 of 10</span>
+          </li>
+          <li>
+            <span class="rule-label">Risk Per Trade / Run</span>
+            <span class="rule-value red">Max 2%</span>
+          </li>
+          <li>
+            <span class="rule-label">Leverage</span>
+            <span class="rule-value">None — skill only</span>
+          </li>
+        </ul>
+
+        <!-- Profit split bar -->
+        <div class="split-bar-wrap">
+          <div class="split-bar-label">
+            <span>Profit Split (on funded account)</span>
+            <span style="color:var(--green);font-weight:700;">${c.profitSplit}% to you</span>
+          </div>
+          <div class="split-bar">
+            <div class="split-fill" style="width:${c.profitSplit}%;"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card-footer">
+        <button class="btn-start ${c.popular ? 'gold' : ''}"
+                onclick="event.stopPropagation();goToCheckout('${c.id}')">
+          Start Challenge — $${c.price} →
+        </button>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ── Filter ────────────────────────────────────────────────────────────────────
+function filterCards(tier, btn) {
+  document.querySelectorAll('.filter-tab').forEach(t =>
+    t.classList.remove('active','active-gold')
+  );
+  btn.classList.add(tier === 'all' ? 'active' : 'active-gold');
+  const filtered = tier === 'all'
+    ? CHALLENGES
+    : CHALLENGES.filter(c => c.tier === tier);
+  renderCards(filtered);
+}
+
+// ── Go to checkout ────────────────────────────────────────────────────────────
+function goToCheckout(id) {
+  const challenge = CHALLENGES.find(c => c.id === id);
+  if (!challenge) return;
+  sessionStorage.setItem('knra_selected_challenge', JSON.stringify(challenge));
+  window.location.href = 'checkout.html';
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+renderCards(CHALLENGES);
+</script>
+</body>
+</html>

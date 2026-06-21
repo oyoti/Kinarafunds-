@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>My Profile — KNRA Funded</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="shared.css"/>
+<style>
+/* ── Layout ── */
+.profile-grid{display:grid;grid-template-columns:300px 1fr;gap:1.5rem;align-items:start;}
+
+/* ── Avatar card ── */
+.avatar-card{background:var(--white);border:1px solid var(--border);border-radius:16px;padding:2rem 1.5rem;text-align:center;position:sticky;top:1.5rem;}
+.avatar-ring{width:100px;height:100px;border-radius:50%;background:linear-gradient(135deg,var(--gold) 0%,#f5c842 100%);display:flex;align-items:center;justify-content:center;margin:0 auto 1rem;font-family:'Playfair Display',serif;font-size:2.4rem;font-weight:900;color:black;position:relative;}
+.avatar-ring .status-dot{position:absolute;bottom:4px;right:4px;width:14px;height:14px;border-radius:50%;border:2px solid white;}
+.status-dot.active{background:#22c55e;}
+.status-dot.inactive{background:#94a3b8;}
+.avatar-name{font-family:'Playfair Display',serif;font-size:1.25rem;font-weight:700;color:var(--charcoal);margin-bottom:0.25rem;}
+.avatar-email{font-size:0.82rem;color:var(--light);margin-bottom:1rem;}
+.avatar-role{display:inline-block;padding:4px 14px;border-radius:20px;font-size:0.75rem;font-weight:700;background:rgba(184,134,11,0.12);color:var(--gold);margin-bottom:1.5rem;}
+.avatar-stats{display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;margin-top:1.25rem;border-top:1px solid var(--border);padding-top:1.25rem;}
+.av-stat{text-align:center;}
+.av-stat .av-val{font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:700;color:var(--charcoal);}
+.av-stat .av-label{font-size:0.72rem;color:var(--light);margin-top:0.2rem;}
+.member-since{font-size:0.78rem;color:var(--light);margin-top:1.2rem;padding-top:1rem;border-top:1px solid var(--border);}
+
+/* ── Right panel ── */
+.profile-panel{display:flex;flex-direction:column;gap:1.25rem;}
+.profile-section{background:var(--white);border:1px solid var(--border);border-radius:16px;overflow:hidden;}
+.section-head{display:flex;justify-content:space-between;align-items:center;padding:1.2rem 1.5rem;border-bottom:1px solid var(--border);}
+.section-head h3{font-family:'Playfair Display',serif;font-size:1.05rem;font-weight:700;color:var(--charcoal);margin:0;}
+.section-head p{font-size:0.8rem;color:var(--light);margin:0.2rem 0 0;}
+.btn-edit{padding:0.45rem 1.1rem;background:transparent;border:1.5px solid var(--gold);color:var(--gold);border-radius:8px;font-family:'DM Sans',sans-serif;font-weight:700;font-size:0.82rem;cursor:pointer;transition:0.2s;}
+.btn-edit:hover{background:rgba(184,134,11,0.1);}
+.btn-save{padding:0.45rem 1.1rem;background:var(--gold);border:none;color:black;border-radius:8px;font-family:'DM Sans',sans-serif;font-weight:700;font-size:0.82rem;cursor:pointer;transition:0.2s;display:none;}
+.btn-save:hover{background:var(--gold-light);}
+.btn-cancel{padding:0.45rem 1.1rem;background:transparent;border:1.5px solid var(--border);color:var(--mid);border-radius:8px;font-family:'DM Sans',sans-serif;font-weight:700;font-size:0.82rem;cursor:pointer;transition:0.2s;display:none;margin-right:0.5rem;}
+.btn-cancel:hover{border-color:var(--red);color:var(--red);}
+.field-grid{display:grid;grid-template-columns:1fr 1fr;gap:0;padding:0;}
+.field-item{padding:1rem 1.5rem;border-bottom:1px solid var(--border);border-right:1px solid var(--border);}
+.field-item:nth-child(even){border-right:none;}
+.field-item:nth-last-child(-n+2){border-bottom:none;}
+.field-item.full-width{grid-column:span 2;border-right:none;}
+.field-item.full-width:last-child{border-bottom:none;}
+.field-label{font-size:0.72rem;font-weight:700;color:var(--light);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:0.4rem;}
+.field-value{font-size:0.92rem;color:var(--charcoal);font-weight:500;}
+.field-value.empty{color:var(--light);font-style:italic;font-weight:400;}
+.field-input{width:100%;border:1.5px solid var(--border);border-radius:8px;padding:0.5rem 0.75rem;font-family:'DM Sans',sans-serif;font-size:0.9rem;color:var(--charcoal);background:var(--off-white);outline:none;transition:border-color 0.2s;box-sizing:border-box;display:none;}
+.field-input:focus{border-color:var(--gold);}
+.field-input[readonly]{background:var(--off-white);color:var(--mid);cursor:not-allowed;}
+
+/* Security section */
+.security-rows{padding:0;}
+.security-row{display:flex;justify-content:space-between;align-items:center;padding:1rem 1.5rem;border-bottom:1px solid var(--border);}
+.security-row:last-child{border-bottom:none;}
+.sec-info .sec-title{font-size:0.9rem;font-weight:600;color:var(--charcoal);}
+.sec-info .sec-desc{font-size:0.78rem;color:var(--light);margin-top:0.2rem;}
+.sec-status{display:flex;align-items:center;gap:0.5rem;}
+.sec-dot{width:8px;height:8px;border-radius:50%;}
+.sec-dot.on{background:#22c55e;}
+.sec-dot.off{background:#94a3b8;}
+.sec-label{font-size:0.78rem;font-weight:600;}
+.sec-label.on{color:#22c55e;}
+.sec-label.off{color:var(--light);}
+.btn-change-pw{padding:0.4rem 1rem;background:transparent;border:1.5px solid var(--border);color:var(--mid);border-radius:8px;font-family:'DM Sans',sans-serif;font-weight:600;font-size:0.8rem;cursor:pointer;transition:0.2s;}
+.btn-change-pw:hover{border-color:var(--gold);color:var(--gold);}
+
+/* Account status card */
+.status-rows{padding:0;}
+.status-row{display:flex;justify-content:space-between;align-items:center;padding:1rem 1.5rem;border-bottom:1px solid var(--border);}
+.status-row:last-child{border-bottom:none;}
+.status-row .sr-label{font-size:0.85rem;color:var(--mid);}
+.status-row .sr-val{font-size:0.88rem;font-weight:700;color:var(--charcoal);}
+
+/* Toast */
+.toast{position:fixed;bottom:2rem;right:2rem;background:var(--charcoal);color:white;padding:0.8rem 1.4rem;border-radius:10px;font-size:0.88rem;font-weight:500;display:none;z-index:9999;box-shadow:0 8px 30px rgba(0,0,0,0.2);}
+.toast.success{border-left:4px solid #22c55e;}
+.toast.error{border-left:4px solid var(--red);}
+
+/* Password modal */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:1000;display:none;align-items:center;justify-content:center;}
+.modal-overlay.open{display:flex;}
+.modal-box{background:var(--white);border-radius:16px;padding:2rem;width:100%;max-width:420px;position:relative;}
+.modal-box h3{font-family:'Playfair Display',serif;font-size:1.2rem;font-weight:700;margin-bottom:0.4rem;}
+.modal-box p{font-size:0.85rem;color:var(--light);margin-bottom:1.5rem;}
+.modal-close{position:absolute;top:1rem;right:1rem;background:none;border:none;font-size:1.2rem;cursor:pointer;color:var(--light);}
+.modal-field{margin-bottom:1rem;}
+.modal-field label{display:block;font-size:0.78rem;font-weight:700;color:var(--light);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:0.4rem;}
+.modal-field input{width:100%;border:1.5px solid var(--border);border-radius:8px;padding:0.65rem 0.9rem;font-family:'DM Sans',sans-serif;font-size:0.9rem;color:var(--charcoal);outline:none;transition:border-color 0.2s;box-sizing:border-box;}
+.modal-field input:focus{border-color:var(--gold);}
+.modal-actions{display:flex;gap:0.75rem;margin-top:1.5rem;}
+.modal-actions .btn-gold{flex:1;text-align:center;}
+.modal-actions .btn-outline-gold{flex:1;text-align:center;padding:0.65rem 1rem;}
+
+@media(max-width:900px){.profile-grid{grid-template-columns:1fr;}.avatar-card{position:static;}}
+@media(max-width:600px){.field-grid{grid-template-columns:1fr;}.field-item{border-right:none!important;}.field-item.full-width{grid-column:span 1;}}
+</style>
+</head>
+<body>
+<div class="layout">
+  <aside class="sidebar" id="sidebar"></aside>
+  <main class="main">
+    <div class="topbar">
+      <div class="topbar-title">My Profile</div>
+      <div class="topbar-right">
+        <a href="dashboard.html" style="font-size:0.85rem;color:var(--mid);text-decoration:none;">← Back to Dashboard</a>
+      </div>
+    </div>
+    <div class="content">
+      <div class="profile-grid">
+
+        <!-- LEFT: Avatar card -->
+        <div class="avatar-card">
+          <div class="avatar-ring" id="avatarRing">
+            <span id="avatarInitials">—</span>
+            <span class="status-dot active" id="avatarDot"></span>
+          </div>
+          <div class="avatar-name" id="avatarName">Loading…</div>
+          <div class="avatar-email" id="avatarEmail">—</div>
+          <div class="avatar-role" id="avatarRole">Trader</div>
+
+          <div class="avatar-stats">
+            <div class="av-stat">
+              <div class="av-val" id="avActiveAccounts">—</div>
+              <div class="av-label">Active Accs</div>
+            </div>
+            
+            <div class="av-stat">
+              <div class="av-val" id="avFunded">—</div>
+              <div class="av-label">Funded Accs</div>
+            </div>
+          </div>
+
+          <div class="member-since" id="memberSince">Member since —</div>
+        </div>
+
+        <!-- RIGHT: Sections -->
+        <div class="profile-panel">
+
+          <!-- Personal Information -->
+          <div class="profile-section" id="sectionPersonal">
+            <div class="section-head">
+              <div>
+                <h3>Personal Information</h3>
+                <p>Your name, email and contact details.</p>
+              </div>
+              <div style="display:flex;gap:0.5rem;align-items:center;">
+                <button class="btn-cancel" id="btnCancelPersonal" onclick="cancelEdit('personal')">Cancel</button>
+                <button class="btn-save"   id="btnSavePersonal"   onclick="savePersonal()">Save Changes</button>
+                <button class="btn-edit"   id="btnEditPersonal"   onclick="startEdit('personal')">Edit</button>
+              </div>
+            </div>
+            <div class="field-grid">
+              <div class="field-item">
+                <div class="field-label">First Name</div>
+                <div class="field-value" id="vFirstName">—</div>
+                <input class="field-input" id="iFirstName" type="text" placeholder="First name"/>
+              </div>
+              <div class="field-item">
+                <div class="field-label">Last Name</div>
+                <div class="field-value" id="vLastName">—</div>
+                <input class="field-input" id="iLastName" type="text" placeholder="Last name"/>
+              </div>
+              <div class="field-item">
+                <div class="field-label">Email Address</div>
+                <div class="field-value" id="vEmail">—</div>
+                <input class="field-input" id="iEmail" type="email" readonly title="Email cannot be changed here"/>
+              </div>
+              <div class="field-item">
+                <div class="field-label">Phone Number</div>
+                <div class="field-value" id="vPhone">—</div>
+                <input class="field-input" id="iPhone" type="tel" placeholder="+1 234 567 8900"/>
+              </div>
+              <div class="field-item full-width">
+                <div class="field-label">Country</div>
+                <div class="field-value" id="vCountry">—</div>
+                <input class="field-input" id="iCountry" type="text" placeholder="e.g. Kenya"/>
+              </div>
+            </div>
+          </div>
+
+          <!-- Account Status -->
+          <div class="profile-section">
+            <div class="section-head">
+              <div>
+                <h3>Account Status</h3>
+                <p>Your trading account overview.</p>
+              </div>
+            </div>
+            <div class="status-rows">
+              <div class="status-row">
+                <span class="sr-label">Account Status</span>
+                <span class="sr-val" id="srStatus">—</span>
+              </div>
+              <div class="status-row">
+                <span class="sr-label">Account Role</span>
+                <span class="sr-val" id="srRole">—</span>
+              </div>
+              <div class="status-row">
+                <span class="sr-label">Active Accounts</span>
+                <span class="sr-val" id="srActiveAccounts">—</span>
+              </div>
+              <div class="status-row">
+                <span class="sr-label">Funded Accounts</span>
+                <span class="sr-val" id="srFundedAccounts">—</span>
+              </div>
+              <div class="status-row">
+                <span class="sr-label">Total PnL (all accounts)</span>
+                <span class="sr-val" id="srTotalPnl">—</span>
+              </div>
+              <div class="status-row">
+                <span class="sr-label">Total Payouts Received</span>
+                <span class="sr-val" id="srTotalPayouts">—</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Security -->
+          <div class="profile-section">
+            <div class="section-head">
+              <div>
+                <h3>Security</h3>
+                <p>Manage your password and account security.</p>
+              </div>
+            </div>
+            <div class="security-rows">
+              <div class="security-row">
+                <div class="sec-info">
+                  <div class="sec-title">Password</div>
+                  <div class="sec-desc">Last changed: unknown</div>
+                </div>
+                <button class="btn-change-pw" onclick="openPasswordModal()">Change Password</button>
+              </div>
+              <div class="security-row">
+                <div class="sec-info">
+                  <div class="sec-title">Account Active</div>
+                  <div class="sec-desc">Your account is currently active and in good standing.</div>
+                </div>
+                <div class="sec-status">
+                  <span class="sec-dot on"></span>
+                  <span class="sec-label on">Active</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Referral -->
+          <div class="profile-section">
+            <div class="section-head">
+              <div>
+                <h3>Referral</h3>
+                <p>Your unique referral code and earnings.</p>
+              </div>
+              <a href="referral.html" class="btn-edit" style="text-decoration:none;display:inline-block;padding:0.45rem 1.1rem;">View Details</a>
+            </div>
+            <div class="status-rows">
+              <div class="status-row">
+                <span class="sr-label">Referral Code</span>
+                <span class="sr-val" id="srReferralCode" style="font-family:monospace;letter-spacing:1px;">—</span>
+              </div>
+              <div class="status-row">
+                <span class="sr-label">Total Referrals</span>
+                <span class="sr-val" id="srReferralCount">—</span>
+              </div>
+              <div class="status-row">
+                <span class="sr-label">Referral Earnings</span>
+                <span class="sr-val" id="srReferralEarnings">—</span>
+              </div>
+            </div>
+          </div>
+
+        </div><!-- /profile-panel -->
+      </div><!-- /profile-grid -->
+    </div>
+  </main>
+</div>
+
+<!-- Password Modal -->
+<div class="modal-overlay" id="pwModal">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closePwModal()">✕</button>
+    <h3>Change Password</h3>
+    <p>Enter your new password below. You will need to log in again after changing it.</p>
+    <div class="modal-field">
+      <label>New Password</label>
+      <input type="password" id="pwNew" placeholder="Min. 8 characters"/>
+    </div>
+    <div class="modal-field">
+      <label>Confirm Password</label>
+      <input type="password" id="pwConfirm" placeholder="Repeat new password"/>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-outline-gold" onclick="closePwModal()">Cancel</button>
+      <button class="btn-gold" onclick="changePassword()">Update Password</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script src="config.js"></script>
+<script src="sidebar.js"></script>
+<script>
+requireAuth();
+renderSidebar('profile');
+
+const SUPABASE_URL = 'https://hhkztoklgeozegehcsmc.supabase.co';
+const ANON_KEY     = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhoa3p0b2tsZ2VvemVnZWhjc21jIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAyMjI1MjEsImV4cCI6MjA5NTc5ODUyMX0.fWs-vU_gIXLNJUh1DA1edrqKh7tc3wv9hjT-ZhhjytY';
+
+function getToken(){ return localStorage.getItem('knra_token') || ANON_KEY; }
+
+async function sbGet(ep){
+  const r = await fetch(`${SUPABASE_URL}/rest/v1${ep}`,{
+    headers:{ 'apikey':ANON_KEY, 'Authorization':`Bearer ${getToken()}`, 'Content-Type':'application/json' }
+  });
+  if(!r.ok){ const e=await r.json(); throw new Error(e.message||'Fetch failed'); }
+  return r.json();
+}
+
+async function sbPatch(ep, body){
+  const r = await fetch(`${SUPABASE_URL}/rest/v1${ep}`,{
+    method:'PATCH',
+    headers:{ 'apikey':ANON_KEY, 'Authorization':`Bearer ${getToken()}`, 'Content-Type':'application/json', 'Prefer':'return=representation' },
+    body: JSON.stringify(body)
+  });
+  if(!r.ok){ const e=await r.json(); throw new Error(e.message||'Update failed'); }
+  return r.json();
+}
+
+/* ── Toast ── */
+function showToast(msg, type='success'){
+  const t = document.getElementById('toast');
+  t.textContent  = msg;
+  t.className    = `toast ${type}`;
+  t.style.display = 'block';
+  setTimeout(()=>{ t.style.display='none'; }, 3500);
+}
+
+/* ── Format helpers ── */
+function fmtMoney(n){
+  if(n == null) return '—';
+  const abs = Math.abs(n);
+  const s   = abs >= 1000
+    ? '$' + abs.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})
+    : '$' + abs.toFixed(2);
+  return (n < 0 ? '-' : '') + s;
+}
+function fmtDate(iso){
+  if(!iso) return '—';
+  return new Date(iso).toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});
+}
+function initials(first, last){
+  return ((first||'')[0]||'') + ((last||'')[0]||'') || '?';
+}
+
+/* ── Cached originals for cancel ── */
+let _origPersonal = {};
+
+/* ── Edit / Cancel / Save ── */
+function startEdit(section){
+  if(section === 'personal'){
+    _origPersonal = {
+      first_name : document.getElementById('iFirstName').value,
+      last_name  : document.getElementById('iLastName').value,
+      phone      : document.getElementById('iPhone').value,
+      country    : document.getElementById('iCountry').value,
+    };
+    /* Show inputs, hide values */
+    ['FirstName','LastName','Email','Phone','Country'].forEach(f=>{
+      document.getElementById('v'+f).style.display = 'none';
+      document.getElementById('i'+f).style.display = 'block';
+    });
+    document.getElementById('btnEditPersonal').style.display   = 'none';
+    document.getElementById('btnSavePersonal').style.display   = 'inline-block';
+    document.getElementById('btnCancelPersonal').style.display = 'inline-block';
+  }
+}
+
+function cancelEdit(section){
+  if(section === 'personal'){
+    /* Restore inputs to original values */
+    document.getElementById('iFirstName').value = _origPersonal.first_name || '';
+    document.getElementById('iLastName').value  = _origPersonal.last_name  || '';
+    document.getElementById('iPhone').value     = _origPersonal.phone      || '';
+    document.getElementById('iCountry').value   = _origPersonal.country    || '';
+    /* Hide inputs, show values */
+    ['FirstName','LastName','Email','Phone','Country'].forEach(f=>{
+      document.getElementById('v'+f).style.display = 'block';
+      document.getElementById('i'+f).style.display = 'none';
+    });
+    document.getElementById('btnEditPersonal').style.display   = 'inline-block';
+    document.getElementById('btnSavePersonal').style.display   = 'none';
+    document.getElementById('btnCancelPersonal').style.display = 'none';
+  }
+}
+
+async function savePersonal(){
+  const user = JSON.parse(localStorage.getItem('knra_user')||'{}');
+  if(!user.id){ showToast('Not logged in','error'); return; }
+
+  const payload = {
+    first_name : document.getElementById('iFirstName').value.trim(),
+    last_name  : document.getElementById('iLastName').value.trim(),
+    phone      : document.getElementById('iPhone').value.trim(),
+    country    : document.getElementById('iCountry').value.trim(),
+  };
+
+  if(!payload.first_name || !payload.last_name){
+    showToast('First and last name are required.','error'); return;
+  }
+
+  const btn = document.getElementById('btnSavePersonal');
+  btn.textContent = 'Saving…';
+  btn.disabled    = true;
+
+  try{
+    await sbPatch(`/users?id=eq.${user.id}`, payload);
+
+    /* Update localStorage */
+    const updated = { ...user, ...payload };
+    localStorage.setItem('knra_user', JSON.stringify(updated));
+
+    /* Refresh displayed values */
+    setField('vFirstName', payload.first_name);
+    setField('vLastName',  payload.last_name);
+    setField('vPhone',     payload.phone);
+    setField('vCountry',   payload.country);
+
+    /* Update avatar */
+    document.getElementById('avatarInitials').textContent = initials(payload.first_name, payload.last_name);
+    document.getElementById('avatarName').textContent     = `${payload.first_name} ${payload.last_name}`;
+
+    cancelEdit('personal');
+    showToast('Profile updated successfully ✓');
+  } catch(err){
+    showToast('Failed: ' + err.message, 'error');
+  } finally{
+    btn.textContent = 'Save Changes';
+    btn.disabled    = false;
+  }
+}
+
+/* ── Password modal ── */
+function openPasswordModal(){ document.getElementById('pwModal').classList.add('open'); }
+function closePwModal(){
+  document.getElementById('pwModal').classList.remove('open');
+  document.getElementById('pwNew').value     = '';
+  document.getElementById('pwConfirm').value = '';
+}
+
+async function changePassword(){
+  const pw1 = document.getElementById('pwNew').value;
+  const pw2 = document.getElementById('pwConfirm').value;
+  if(pw1.length < 8){ showToast('Password must be at least 8 characters.','error'); return; }
+  if(pw1 !== pw2){    showToast('Passwords do not match.','error'); return; }
+
+  const token = getToken();
+  try{
+    const r = await fetch(`${SUPABASE_URL}/auth/v1/user`,{
+      method : 'PUT',
+      headers: { 'apikey':ANON_KEY, 'Authorization':`Bearer ${token}`, 'Content-Type':'application/json' },
+      body   : JSON.stringify({ password: pw1 })
+    });
+    if(!r.ok){ const e=await r.json(); throw new Error(e.message||'Failed'); }
+    closePwModal();
+    showToast('Password changed. Please log in again.');
+    setTimeout(()=>{ localStorage.clear(); window.location.href='login.html'; }, 2500);
+  } catch(err){
+    showToast('Error: ' + err.message, 'error');
+  }
+}
+
+/* ── Helpers ── */
+function setField(id, val){
+  const el = document.getElementById(id);
+  if(!el) return;
+  if(val){
+    el.textContent = val;
+    el.classList.remove('empty');
+  } else {
+    el.textContent = 'Not provided';
+    el.classList.add('empty');
+  }
+}
+
+/* ── Load profile ── */
+async function loadProfile(){
+  try{
+    const user = JSON.parse(localStorage.getItem('knra_user')||'{}');
+    if(!user || !user.id){ window.location.href='login.html'; return; }
+
+    /* Fetch fresh user data from DB */
+    const rows = await sbGet(`/users?id=eq.${user.id}&select=*`);
+    const u    = rows[0] || user;
+
+    /* Update localStorage with fresh data */
+    localStorage.setItem('knra_user', JSON.stringify({ ...user, ...u }));
+
+    const firstName = u.first_name || '';
+    const lastName  = u.last_name  || '';
+    const fullName  = `${firstName} ${lastName}`.trim() || 'Trader';
+
+    /* Avatar */
+    document.getElementById('avatarInitials').textContent = initials(firstName, lastName);
+    document.getElementById('avatarName').textContent     = fullName;
+    document.getElementById('avatarEmail').textContent    = u.email || '—';
+    document.getElementById('avatarRole').textContent     = (u.role || 'trader').toUpperCase();
+    document.getElementById('memberSince').textContent    = `Member since ${fmtDate(u.created_at)}`;
+
+    /* Status dot */
+    const dot = document.getElementById('avatarDot');
+    dot.className = `status-dot ${u.status === 'active' ? 'active' : 'inactive'}`;
+
+    /* Personal fields */
+    setField('vFirstName', firstName);
+    setField('vLastName',  lastName);
+    setField('vEmail',     u.email);
+    setField('vPhone',     u.phone);
+    setField('vCountry',   u.country);
+
+    /* Populate inputs (for editing) */
+    document.getElementById('iFirstName').value = firstName;
+    document.getElementById('iLastName').value  = lastName;
+    document.getElementById('iEmail').value     = u.email || '';
+    document.getElementById('iPhone').value     = u.phone || '';
+    document.getElementById('iCountry').value   = u.country || '';
+
+    /* Account status section */
+    document.getElementById('srStatus').textContent = u.status || '—';
+    document.getElementById('srRole').textContent   = u.role   || '—';
+
+    /* Fetch accounts */
+    const accounts = await sbGet(
+      `/accounts?user_id=eq.${user.id}&status=eq.active&select=id,account_ref,phase,size,start_date`
+    );
+    const funded = accounts.filter(a => /fund/i.test(String(a.phase||'')));
+
+    document.getElementById('avActiveAccounts').textContent   = accounts.length || '0';
+    document.getElementById('avFunded').textContent           = funded.length   || '0';
+    document.getElementById('srActiveAccounts').textContent   = accounts.length;
+    document.getElementById('srFundedAccounts').textContent   = funded.length;
+
+    
+
+    /* Referral */
+    try{
+      const refRows = await sbGet(`/referral_codes?user_id=eq.${user.id}&select=code`);
+      const code    = refRows[0]?.code || u.referral_code || '—';
+      document.getElementById('srReferralCode').textContent = code;
+
+      const refs = await sbGet(`/referrals?referrer_id=eq.${user.id}&select=id,commission_amount`);
+      const refEarnings = refs.reduce((s,r) => s + (parseFloat(r.commission_amount)||0), 0);
+      document.getElementById('srReferralCount').textContent    = refs.length;
+      document.getElementById('srReferralEarnings').textContent = fmtMoney(refEarnings);
+    } catch(_){
+      document.getElementById('srReferralCode').textContent     = u.referral_code || '—';
+      document.getElementById('srReferralCount').textContent    = '—';
+      document.getElementById('srReferralEarnings').textContent = '—';
+    }
+
+  } catch(err){
+    console.error('Profile error:', err);
+    showToast('Could not load profile: ' + err.message, 'error');
+  }
+}
+
+loadProfile();
+</script>
+</body>
+</html>

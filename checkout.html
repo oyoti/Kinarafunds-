@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Checkout — KNRA Funded</title>
+<link rel="icon" href="data:,">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+:root{--white:#ffffff;--off-white:#f8f7f4;--charcoal:#1a1a1a;--mid:#4a4a4a;--light:#888888;--gold:#b8860b;--gold-light:#d4a017;--gold-pale:#fdf6e3;--border:#e8e1d6;--green:#1a7a4a;--red:#c0392b;--error:#fef2f2;--success-bg:#e8f5ed;--card-shadow:0 4px 24px rgba(0,0,0,0.07);}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'DM Sans',sans-serif;background:var(--off-white);color:var(--charcoal);min-height:100vh;}
+.topnav{background:var(--charcoal);padding:1rem 2rem;display:flex;align-items:center;justify-content:space-between;}
+.topnav-logo{font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:900;color:var(--white);text-decoration:none;}
+.topnav-logo span{color:var(--gold);}
+.topnav-back{color:rgba(255,255,255,0.6);font-size:0.85rem;text-decoration:none;display:flex;align-items:center;gap:0.4rem;transition:color 0.2s;}
+.topnav-back:hover{color:var(--gold);}
+.steps-bar{background:var(--white);border-bottom:1px solid var(--border);padding:1rem 2rem;}
+.steps{display:flex;align-items:center;justify-content:center;max-width:600px;margin:0 auto;}
+.step{display:flex;align-items:center;gap:0.5rem;font-size:0.82rem;font-weight:600;color:var(--light);}
+.step.active{color:var(--charcoal);}
+.step.done{color:var(--green);}
+.step-num{width:26px;height:26px;border-radius:50%;border:2px solid currentColor;display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:700;flex-shrink:0;}
+.step.done .step-num{background:var(--green);border-color:var(--green);color:var(--white);}
+.step.active .step-num{background:var(--charcoal);border-color:var(--charcoal);color:var(--white);}
+.step-line{flex:1;height:2px;background:var(--border);margin:0 0.75rem;}
+.step-line.done{background:var(--green);}
+.checkout-wrap{max-width:1000px;margin:2rem auto;padding:0 1.5rem;display:grid;grid-template-columns:1fr 380px;gap:2rem;align-items:start;}
+@media(max-width:800px){.checkout-wrap{grid-template-columns:1fr;}}
+.card{background:var(--white);border-radius:16px;border:1px solid var(--border);box-shadow:var(--card-shadow);overflow:hidden;animation:fadeUp 0.4s ease both;}
+.card-header{padding:1.4rem 1.75rem;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:0.75rem;}
+.card-header h2{font-family:'Playfair Display',serif;font-size:1.15rem;font-weight:700;}
+.card-icon{width:36px;height:36px;border-radius:10px;background:var(--gold-pale);display:flex;align-items:center;justify-content:center;font-size:1.1rem;}
+.card-body{padding:1.75rem;}
+.plan-badge{display:inline-flex;align-items:center;gap:0.5rem;background:var(--gold-pale);border:1px solid var(--gold);border-radius:8px;padding:0.4rem 0.85rem;font-size:0.82rem;font-weight:700;color:var(--gold);margin-bottom:1.25rem;}
+.order-rows{display:flex;flex-direction:column;gap:0.6rem;margin-bottom:1.25rem;}
+.order-row{display:flex;justify-content:space-between;font-size:0.88rem;}
+.order-row .lbl{color:var(--light);}
+.order-row .val{font-weight:600;color:var(--charcoal);}
+.order-row .val.green{color:var(--green);}
+.divider-line{height:1px;background:var(--border);margin:1rem 0;}
+.order-total{display:flex;justify-content:space-between;align-items:center;}
+.order-total .lbl{font-weight:700;font-size:1rem;}
+.order-total .price{font-family:'Playfair Display',serif;font-size:1.6rem;font-weight:900;color:var(--charcoal);}
+.rules-list{margin-top:1.25rem;display:flex;flex-direction:column;gap:0.5rem;}
+.rule-item{display:flex;align-items:flex-start;gap:0.6rem;font-size:0.82rem;color:var(--mid);}
+.rule-dot{width:6px;height:6px;border-radius:50%;background:var(--gold);flex-shrink:0;margin-top:5px;}
+.section-title{font-size:0.78rem;font-weight:700;color:var(--light);letter-spacing:1px;text-transform:uppercase;margin-bottom:1rem;}
+.form-group{margin-bottom:1.2rem;}
+.form-group label{display:block;font-size:0.82rem;font-weight:600;color:var(--mid);margin-bottom:0.45rem;}
+.form-group input,.form-group select{width:100%;padding:0.8rem 1rem;border:1.5px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:0.92rem;color:var(--charcoal);background:var(--off-white);outline:none;transition:all 0.2s;}
+.form-group input:focus,.form-group select:focus{border-color:var(--gold);background:var(--white);box-shadow:0 0 0 3px rgba(184,134,11,0.08);}
+.form-group input.err{border-color:var(--red);background:var(--error);}
+.field-err{font-size:0.77rem;color:var(--red);margin-top:0.3rem;display:none;}
+.field-err.show{display:block;}
+.form-row-2{display:grid;grid-template-columns:1fr 1fr;gap:1rem;}
+.card-icons{display:flex;gap:0.5rem;margin-bottom:1rem;}
+.card-icon-img{padding:0.3rem 0.6rem;border:1px solid var(--border);border-radius:5px;font-size:0.72rem;font-weight:700;background:var(--white);}
+.card-icon-img.visa{color:#1a1f71;}
+.card-icon-img.mc{color:#eb001b;}
+.card-icon-img.amex{color:#007bc1;}
+.card-input-wrap{position:relative;}
+.card-input-wrap input{padding-right:3.5rem;}
+.card-type-badge{position:absolute;right:0.75rem;top:50%;transform:translateY(-50%);font-size:0.7rem;font-weight:700;color:var(--light);}
+.method-tabs{display:flex;gap:0.75rem;margin-bottom:1.5rem;flex-wrap:wrap;}
+.method-tab{padding:0.6rem 1.2rem;border:1.5px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:0.85rem;font-weight:600;cursor:pointer;background:var(--off-white);color:var(--mid);transition:all 0.2s;}
+.method-tab.active{border-color:var(--gold);background:var(--gold-pale);color:var(--gold);}
+.method-tab:hover{border-color:var(--gold-light);color:var(--gold-light);}
+.btn-pay{width:100%;padding:1rem;background:var(--charcoal);color:var(--white);border:none;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:1rem;font-weight:700;cursor:pointer;transition:all 0.2s;display:flex;align-items:center;justify-content:center;gap:0.6rem;margin-top:1.5rem;}
+.btn-pay:hover:not(:disabled){background:var(--gold);}
+.btn-pay:disabled{opacity:0.6;cursor:not-allowed;}
+.btn-pay .spinner{width:18px;height:18px;border:2px solid rgba(255,255,255,0.3);border-top-color:white;border-radius:50%;animation:spin 0.7s linear infinite;display:none;}
+.btn-pay.loading .btn-text{display:none;}
+.btn-pay.loading .spinner{display:block;}
+.secure-note{display:flex;align-items:center;justify-content:center;gap:0.4rem;font-size:0.78rem;color:var(--light);margin-top:0.75rem;}
+.alert{padding:0.9rem 1rem;border-radius:8px;font-size:0.86rem;margin-bottom:1.25rem;display:none;line-height:1.5;}
+.alert.show{display:block;}
+.alert.error{background:var(--error);color:var(--red);border:1px solid #f5c6cb;}
+.alert.success{background:var(--success-bg);color:var(--green);border:1px solid #c3e6cb;}
+.success-screen{text-align:center;padding:2rem 1.75rem;}
+.success-icon{width:72px;height:72px;border-radius:50%;background:var(--success-bg);border:3px solid var(--green);display:flex;align-items:center;justify-content:center;font-size:2rem;margin:0 auto 1.5rem;}
+.success-screen h2{font-family:'Playfair Display',serif;font-size:1.6rem;font-weight:900;margin-bottom:0.5rem;}
+.success-screen>p{font-size:0.9rem;color:var(--light);margin-bottom:1.5rem;line-height:1.6;}
+.creds-box{background:var(--gold-pale);border:1px solid var(--gold);border-radius:12px;padding:1.25rem;text-align:left;margin-bottom:1rem;}
+.creds-box-title{font-size:0.78rem;font-weight:700;color:var(--gold);letter-spacing:1px;text-transform:uppercase;margin-bottom:0.85rem;}
+.cred-row{display:flex;justify-content:space-between;align-items:center;font-size:0.84rem;padding:0.5rem 0;border-bottom:1px solid rgba(184,134,11,0.15);}
+.cred-row:last-child{border-bottom:none;}
+.cred-row .lbl{color:var(--mid);font-weight:500;}
+.cred-row .val{font-weight:700;color:var(--charcoal);display:flex;align-items:center;gap:0.5rem;}
+.cred-val-text{font-family:monospace;font-size:0.9rem;letter-spacing:0.5px;}
+.cred-copy{padding:3px 10px;border:1px solid var(--gold);border-radius:4px;background:none;color:var(--gold);font-size:0.7rem;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.2s;}
+.cred-copy:hover{background:var(--gold);color:var(--white);}
+.txn-box{background:var(--off-white);border:1px solid var(--border);border-radius:10px;padding:1.25rem;text-align:left;margin-bottom:1rem;}
+.txn-row{display:flex;justify-content:space-between;align-items:flex-start;font-size:0.84rem;padding:0.35rem 0;}
+.txn-row .lbl{color:var(--light);flex-shrink:0;margin-right:1rem;}
+.txn-row .val{font-weight:600;text-align:right;word-break:break-all;}
+.warn-box{background:#fffbeb;border:1px solid #f59e0b;border-radius:8px;padding:0.85rem 1rem;font-size:0.82rem;color:#92400e;margin-bottom:1.25rem;display:flex;gap:0.5rem;align-items:flex-start;text-align:left;line-height:1.5;}
+.action-btns{display:flex;gap:0.75rem;margin-top:0.5rem;}
+.btn-dashboard{flex:1;display:inline-block;padding:0.85rem 1rem;background:var(--charcoal);color:var(--white);border-radius:8px;text-decoration:none;font-weight:700;font-size:0.92rem;transition:background 0.2s;text-align:center;}
+.btn-dashboard:hover{background:var(--gold);}
+.btn-print{flex:1;padding:0.85rem 1rem;background:none;border:1.5px solid var(--border);color:var(--mid);border-radius:8px;font-weight:700;font-size:0.92rem;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.2s;}
+.btn-print:hover{border-color:var(--gold);color:var(--gold);}
+.info-note{background:var(--gold-pale);border:1px solid var(--gold);border-radius:8px;padding:0.85rem 1rem;font-size:0.82rem;color:var(--mid);line-height:1.6;margin-top:0.75rem;}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+@media print{.topnav,.steps-bar,.btn-print,.btn-dashboard,.warn-box,#paymentCard{display:none!important;}.checkout-wrap{display:block;max-width:100%;}.card{box-shadow:none;border:1px solid #ccc;}}
+</style>
+</head>
+<body>
+
+<nav class="topnav">
+  <a href="dashboard.html" class="topnav-logo">KNRA<span>.</span>FUNDED</a>
+  <a href="challenges.html" class="topnav-back">← Back to Challenges</a>
+</nav>
+
+<div class="steps-bar">
+  <div class="steps">
+    <div class="step done" id="step1"><div class="step-num">✓</div><span>Choose Plan</span></div>
+    <div class="step-line done" id="line1"></div>
+    <div class="step active" id="step2"><div class="step-num">2</div><span>Payment</span></div>
+    <div class="step-line" id="line2"></div>
+    <div class="step" id="step3"><div class="step-num">3</div><span>Account Ready</span></div>
+  </div>
+</div>
+
+<div class="checkout-wrap">
+  <div>
+    <div class="card" id="paymentCard">
+      <div class="card-header"><div class="card-icon">💳</div><h2>Payment Details</h2></div>
+      <div class="card-body">
+        <div class="alert" id="alertBox"></div>
+        <p class="section-title">Select Payment Method</p>
+        <div class="method-tabs">
+          <button class="method-tab active" data-method="card" onclick="selectMethod('card')">💳 Card</button>
+          <button class="method-tab" data-method="crypto" onclick="selectMethod('crypto')">₿ Crypto</button>
+          <button class="method-tab" data-method="mpesa" onclick="selectMethod('mpesa')">📱 M-Pesa</button>
+        </div>
+        <div id="formCard">
+          <div class="card-icons">
+            <span class="card-icon-img visa">VISA</span>
+            <span class="card-icon-img mc">MC</span>
+            <span class="card-icon-img amex">AMEX</span>
+          </div>
+          <div class="form-group">
+            <label>Cardholder Name</label>
+            <input type="text" id="cardName" placeholder="John Doe" autocomplete="cc-name"/>
+            <div class="field-err" id="cardNameErr">Name is required.</div>
+          </div>
+          <div class="form-group">
+            <label>Card Number</label>
+            <div class="card-input-wrap">
+              <input type="text" id="cardNumber" placeholder="1234 5678 9012 3456" maxlength="19" oninput="formatCard(this)" autocomplete="cc-number"/>
+              <span class="card-type-badge" id="cardTypeBadge"></span>
+            </div>
+            <div class="field-err" id="cardNumberErr">Enter a valid 16-digit card number.</div>
+          </div>
+          <div class="form-row-2">
+            <div class="form-group">
+              <label>Expiry Date</label>
+              <input type="text" id="cardExpiry" placeholder="MM / YY" maxlength="7" oninput="formatExpiry(this)" autocomplete="cc-exp"/>
+              <div class="field-err" id="cardExpiryErr">Invalid expiry date.</div>
+            </div>
+            <div class="form-group">
+              <label>CVV</label>
+              <input type="password" id="cardCvv" placeholder="•••" maxlength="4" autocomplete="cc-csc"/>
+              <div class="field-err" id="cardCvvErr">CVV is required.</div>
+            </div>
+          </div>
+        </div>
+        <div id="formCrypto" style="display:none;">
+          <div class="form-group">
+            <label>Select Cryptocurrency</label>
+            <select id="cryptoCoin">
+              <option value="BTC">Bitcoin (BTC)</option>
+              <option value="ETH">Ethereum (ETH)</option>
+              <option value="USDT">Tether (USDT — TRC20)</option>
+              <option value="USDC">USD Coin (USDC)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Your Wallet Address (for refund reference)</label>
+            <input type="text" id="walletAddress" placeholder="0x... or bc1..."/>
+            <div class="field-err" id="walletErr">Wallet address is required.</div>
+          </div>
+          <div class="info-note">⚡ <strong>Simulated:</strong> In production this shows a deposit address and QR code.</div>
+        </div>
+        <div id="formMpesa" style="display:none;">
+          <div class="form-group">
+            <label>M-Pesa Phone Number</label>
+            <input type="tel" id="mpesaPhone" placeholder="07XX XXX XXX"/>
+            <div class="field-err" id="mpesaErr">A valid phone number is required.</div>
+          </div>
+          <div class="info-note">📱 <strong>Simulated:</strong> In production an STK push is sent to your phone.</div>
+        </div>
+        <button class="btn-pay" id="payBtn" onclick="processPayment()">
+          <span class="btn-text">🔒 Pay <span id="payBtnAmount"></span></span>
+          <div class="spinner"></div>
+        </button>
+        <p class="secure-note">🔒 256-bit SSL encrypted &nbsp;·&nbsp; Payments are simulated</p>
+      </div>
+    </div>
+
+    <div class="card" id="successCard" style="display:none;">
+      <div class="success-screen">
+        <div class="success-icon">✅</div>
+        <h2>Account Created!</h2>
+        <p>Your challenge account is ready to trade.<br/>Save your credentials — you will need them to connect your platform.</p>
+        <div class="creds-box" id="credsBox"><div class="creds-box-title">🔐 Your Account Credentials</div></div>
+        <div class="warn-box">⚠️<div><strong>Save these credentials now!</strong> You can view them anytime in your <strong>Accounts</strong> dashboard. Never share your password.</div></div>
+        <div class="txn-box" id="txnDetails"></div>
+        <div class="action-btns">
+          <button class="btn-print" onclick="window.print()">🖨️ Print Receipt</button>
+          <a href="dashboard.html" class="btn-dashboard">Go to Dashboard →</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <div class="card">
+      <div class="card-header"><div class="card-icon">📋</div><h2>Order Summary</h2></div>
+      <div class="card-body">
+        <div class="plan-badge" id="planBadge">⚡ Loading…</div>
+        <div class="order-rows">
+          <div class="order-row"><span class="lbl">Account Size</span><span class="val" id="sumSize">—</span></div>
+          <div class="order-row"><span class="lbl">Challenge Tier</span><span class="val" id="sumType">—</span></div>
+          <div class="order-row"><span class="lbl">Profit Target</span><span class="val" id="sumTarget">—</span></div>
+          <div class="order-row"><span class="lbl">Max Drawdown</span><span class="val" id="sumDrawdown">—</span></div>
+          <div class="order-row"><span class="lbl">Profit Split</span><span class="val green" id="sumSplit">—</span></div>
+          <div class="order-row"><span class="lbl">Min Trading Days</span><span class="val">10 days</span></div>
+          <div class="order-row"><span class="lbl">Min Profitable Days</span><span class="val">5 days</span></div>
+        </div>
+        <div class="divider-line"></div>
+        <div class="order-total">
+          <span class="lbl">Total Due</span>
+          <span class="price" id="sumPrice">—</span>
+        </div>
+        <div class="rules-list">
+          <p class="section-title" style="margin-top:1.25rem;">Challenge Rules</p>
+          <div class="rule-item"><div class="rule-dot"></div><span>Minimum 10 trading days</span></div>
+          <div class="rule-item"><div class="rule-dot"></div><span>Minimum 5 profitable days</span></div>
+          <div class="rule-item"><div class="rule-dot"></div><span>No leverage allowed</span></div>
+          <div class="rule-item"><div class="rule-dot"></div><span>Max 2% risk per trade / per run</span></div>
+          <div class="rule-item"><div class="rule-dot"></div><span>No profit cap once funded</span></div>
+          <div class="rule-item"><div class="rule-dot"></div><span>Up to 80% profit split on funded accounts</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const SUPABASE_URL='https://hhkztoklgeozegehcsmc.supabase.co';
+const ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhoa3p0b2tsZ2VvemVnZWhjc21jIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAyMjI1MjEsImV4cCI6MjA5NTc5ODUyMX0.fWs-vU_gIXLNJUh1DA1edrqKh7tc3wv9hjT-ZhhjytY';
+
+// ── AUTH GUARD ───────────────────────────────────────────────────────────────
+const _user=JSON.parse(localStorage.getItem('knra_user')||'null');
+const _token=localStorage.getItem('knra_token');
+if(!_user||!_token){window.location.href='login.html';}
+
+// ── LOAD CHALLENGE ───────────────────────────────────────────────────────────
+const challenge=JSON.parse(sessionStorage.getItem('knra_selected_challenge')||'null');
+if(!challenge){alert('No challenge selected.');window.location.href='challenges.html';}
+
+// ── POPULATE SUMMARY ─────────────────────────────────────────────────────────
+document.getElementById('planBadge').textContent='⚡ '+(challenge.name||'Challenge');
+document.getElementById('sumSize').textContent=challenge.accountSize||'—';
+document.getElementById('sumType').textContent=capitalise(challenge.tier)||'—';
+document.getElementById('sumTarget').textContent=challenge.profitTarget||'50%';
+document.getElementById('sumDrawdown').textContent=challenge.maxDrawdown||'8%';
+document.getElementById('sumSplit').textContent=(challenge.profitSplit||80)+'%';
+document.getElementById('sumPrice').textContent='$'+challenge.price;
+document.getElementById('payBtnAmount').textContent='$'+challenge.price;
+
+// ── UTILITIES ────────────────────────────────────────────────────────────────
+function capitalise(s){if(!s)return '';return s.charAt(0).toUpperCase()+s.slice(1);}
+
+function parseMoney(str){
+  if(!str)return 0;
+  return parseFloat(String(str).replace(/\$/g,'').replace(/,/g,'').replace(/k/gi,'000').replace(/%/g,'').trim())||0;
+}
+
+function generateTxnId(){
+  const c='ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';let id='KNRA-';
+  for(let i=0;i<12;i++)id+=c[Math.floor(Math.random()*c.length)];
+  return id;
+}
+
+function genAccountRef(){
+  return 'ACC-'+Date.now().toString(36).toUpperCase()+'-'+Math.random().toString(36).substring(2,6).toUpperCase();
+}
+
+function genPassword(){
+  const c='ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789@#$!';let p='';
+  for(let i=0;i<12;i++)p+=c[Math.floor(Math.random()*c.length)];
+  return p;
+}
+
+function genLoginNumber(){
+  return 10006+Math.floor(Math.random()*89994);
+}
+
+function buildPaymentRef(){
+  if(activeMethod==='card'){const n=document.getElementById('cardNumber').value.replace(/\s/g,'');return 'CARD-****'+n.slice(-4);}
+  if(activeMethod==='crypto'){const coin=document.getElementById('cryptoCoin').value;const w=document.getElementById('walletAddress').value.trim();return coin+'-'+w.substring(0,10)+'...';}
+  if(activeMethod==='mpesa')return 'MPESA-'+document.getElementById('mpesaPhone').value.trim();
+  return 'UNKNOWN';
+}
+
+function methodLabel(){
+  if(activeMethod==='card'){const n=document.getElementById('cardNumber').value.replace(/\s/g,'');return 'Card (****'+n.slice(-4)+')';}
+  if(activeMethod==='crypto')return document.getElementById('cryptoCoin').value+' Crypto';
+  if(activeMethod==='mpesa')return 'M-Pesa ('+document.getElementById('mpesaPhone').value.trim()+')';
+  return activeMethod;
+}
+
+function showAlert(msg,type='error'){
+  const b=document.getElementById('alertBox');
+  b.textContent=msg;b.className='alert show '+type;
+  b.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+function copyToClipboard(text,btn){
+  const fallback=()=>{
+    const ta=document.createElement('textarea');ta.value=text;
+    ta.style.position='fixed';ta.style.opacity='0';
+    document.body.appendChild(ta);ta.select();
+    document.execCommand('copy');document.body.removeChild(ta);
+  };
+  if(navigator.clipboard&&window.isSecureContext){navigator.clipboard.writeText(text).catch(fallback);}
+  else{fallback();}
+  btn.textContent='Copied!';setTimeout(()=>{btn.textContent='Copy';},2000);
+}
+
+// ── METHOD TOGGLE ────────────────────────────────────────────────────────────
+let activeMethod='card';
+
+function selectMethod(m){
+  activeMethod=m;
+  document.querySelectorAll('.method-tab').forEach(t=>t.classList.toggle('active',t.dataset.method===m));
+  document.getElementById('formCard').style.display=m==='card'?'block':'none';
+  document.getElementById('formCrypto').style.display=m==='crypto'?'block':'none';
+  document.getElementById('formMpesa').style.display=m==='mpesa'?'block':'none';
+}
+
+// ── FORMATTERS ───────────────────────────────────────────────────────────────
+function formatCard(input){
+  let v=input.value.replace(/\D/g,'').substring(0,16);
+  input.value=v.replace(/(.{4})/g,'$1 ').trim();
+  const b=document.getElementById('cardTypeBadge');
+  if(/^4/.test(v))b.textContent='VISA';
+  else if(/^5[1-5]/.test(v))b.textContent='MC';
+  else if(/^3[47]/.test(v))b.textContent='AMEX';
+  else b.textContent='';
+}
+
+function formatExpiry(input){
+  let v=input.value.replace(/\D/g,'').substring(0,4);
+  if(v.length>=2)v=v.substring(0,2)+' / '+v.substring(2);
+  input.value=v;
+}
+
+// ── VALIDATION ───────────────────────────────────────────────────────────────
+function setErr(inputId,errId,show){
+  document.getElementById(inputId).classList.toggle('err',show);
+  document.getElementById(errId).classList.toggle('show',show);
+}
+
+function validatePayment(){
+  let ok=true;
+  if(activeMethod==='card'){
+    const name=document.getElementById('cardName').value.trim();
+    const number=document.getElementById('cardNumber').value.replace(/\s/g,'');
+    const expiry=document.getElementById('cardExpiry').value.trim();
+    const cvv=document.getElementById('cardCvv').value.trim();
+    if(!name){setErr('cardName','cardNameErr',true);ok=false;}else setErr('cardName','cardNameErr',false);
+    if(number.length!==16){setErr('cardNumber','cardNumberErr',true);ok=false;}else setErr('cardNumber','cardNumberErr',false);
+    if(!/^\d{2} \/ \d{2}$/.test(expiry)){setErr('cardExpiry','cardExpiryErr',true);ok=false;}else setErr('cardExpiry','cardExpiryErr',false);
+    if(cvv.length<3){setErr('cardCvv','cardCvvErr',true);ok=false;}else setErr('cardCvv','cardCvvErr',false);
+  }
+  if(activeMethod==='crypto'){
+    const w=document.getElementById('walletAddress').value.trim();
+    if(!w){setErr('walletAddress','walletErr',true);ok=false;}else setErr('walletAddress','walletErr',false);
+  }
+  if(activeMethod==='mpesa'){
+    const p=document.getElementById('mpesaPhone').value.trim();
+    if(p.length<9){setErr('mpesaPhone','mpesaErr',true);ok=false;}else setErr('mpesaPhone','mpesaErr',false);
+  }
+  return ok;
+}
+
+// ── SUPABASE REQUEST ─────────────────────────────────────────────────────────
+async function supabaseRequest(endpoint,options={}){
+  let token=localStorage.getItem('knra_token');
+  if(!token||token==='undefined'||token==='null')token=ANON_KEY;
+  const res=await fetch(`${SUPABASE_URL}/rest/v1${endpoint}`,{
+    ...options,
+    headers:{
+      'Content-Type':'application/json',
+      'apikey':ANON_KEY,
+      'Authorization':`Bearer ${token}`,
+      'Prefer':(options.headers&&options.headers['Prefer'])||'return=representation',
+      ...(options.headers||{})
+    }
+  });
+  const text=await res.text();
+  let data;
+  try{data=JSON.parse(text);}catch(e){data=text;}
+  if(!res.ok){
+    console.error('Supabase',res.status,endpoint,data);
+    const msg=typeof data==='object'?(data.message||data.hint||data.details||JSON.stringify(data)):String(text);
+    throw new Error(msg);
+  }
+  return data;
+}
+
+// ── ENSURE USER IN public.users ──────────────────────────────────────────────
+async function ensureUserExists(user){
+  try{
+    const rows=await supabaseRequest(`/users?id=eq.${user.id}&select=id`);
+    if(Array.isArray(rows)&&rows.length>0){
+      console.log('User confirmed in public.users');
+      return true;
+    }
+    console.warn('User missing — inserting into public.users');
+    await supabaseRequest('/users',{
+      method:'POST',
+      headers:{'Prefer':'return=minimal'},
+      body:JSON.stringify({
+        id:user.id,
+        email:user.email||'',
+        first_name:user.first_name||'',
+        last_name:user.last_name||'',
+        phone:user.phone||'',
+        country:user.country||'',
+        role:user.role||'trader',
+        status:'active',
+        referral_code:user.referral_code||'KNRA'+Math.random().toString(36).substring(2,8).toUpperCase(),
+        created_at:new Date().toISOString()
+      })
+    });
+    console.log('User inserted into public.users');
+    return true;
+  }catch(e){
+    if(e.message.includes('duplicate')||e.message.includes('already exists')){return true;}
+    console.error('ensureUserExists failed:',e.message);
+    return false;
+  }
+}
+
+// ── RENDER CREDENTIALS ───────────────────────────────────────────────────────
+function renderCreds(loginNum,loginPass,accountSize,accountRef){
+  const rows=[
+    {lbl:'Login Number',val:String(loginNum),copyable:true},
+    {lbl:'Password',val:String(loginPass),copyable:true},
+    {lbl:'Account Size',val:String(accountSize),copyable:false},
+    {lbl:'Phase',val:'Phase 1',copyable:false},
+    {lbl:'Platform',val:'MT5',copyable:false},
+    {lbl:'Server',val:'KNRA-Live',copyable:false},
+    {lbl:'Account Ref',val:String(accountRef),copyable:false}
+  ];
+  const box=document.getElementById('credsBox');
+  box.innerHTML='<div class="creds-box-title">🔐 Your Account Credentials</div>';
+  rows.forEach(row=>{
+    const div=document.createElement('div');div.className='cred-row';
+    const lbl=document.createElement('span');lbl.className='lbl';lbl.textContent=row.lbl;
+    const valWrap=document.createElement('span');valWrap.className='val';
+    const valText=document.createElement('span');valText.className='cred-val-text';valText.textContent=row.val;
+    valWrap.appendChild(valText);
+    if(row.copyable){
+      const btn=document.createElement('button');btn.className='cred-copy';btn.textContent='Copy';
+      const v=row.val;btn.onclick=()=>copyToClipboard(v,btn);
+      valWrap.appendChild(btn);
+    }
+    div.appendChild(lbl);div.appendChild(valWrap);box.appendChild(div);
+  });
+}
+
+// ── SHOW SUCCESS SCREEN ──────────────────────────────────────────────────────
+function showSuccess(loginNum,loginPass,accountRef,txnId,amount){
+  renderCreds(loginNum,loginPass,challenge.accountSize||'—',accountRef);
+  document.getElementById('txnDetails').innerHTML=`
+    <div class="txn-row"><span class="lbl">Transaction ID</span><span class="val">${txnId}</span></div>
+    <div class="txn-row"><span class="lbl">Challenge</span><span class="val">${challenge.name||'—'}</span></div>
+    <div class="txn-row"><span class="lbl">Account Size</span><span class="val">${challenge.accountSize||'—'}</span></div>
+    <div class="txn-row"><span class="lbl">Amount Paid</span><span class="val">$${parseFloat(amount).toFixed(2)} USD</span></div>
+    <div class="txn-row"><span class="lbl">Payment Method</span><span class="val">${methodLabel()}</span></div>
+    <div class="txn-row"><span class="lbl">Status</span><span class="val" style="color:var(--green);font-weight:700;">✅ Completed</span></div>
+    <div class="txn-row"><span class="lbl">Date</span><span class="val">${new Date().toLocaleString()}</span></div>
+  `;
+  document.getElementById('step2').className='step done';
+  document.getElementById('step2').querySelector('.step-num').textContent='✓';
+  document.getElementById('line2').className='step-line done';
+  document.getElementById('step3').className='step active';
+  document.getElementById('paymentCard').style.display='none';
+  document.getElementById('successCard').style.display='block';
+  document.getElementById('successCard').scrollIntoView({behavior:'smooth'});
+}
+
+// ── MAIN PAYMENT PROCESSOR ───────────────────────────────────────────────────
+async function processPayment(){
+  if(!validatePayment())return;
+
+  const btn=document.getElementById('payBtn');
+  btn.classList.add('loading');
+  btn.disabled=true;
+  document.getElementById('alertBox').className='alert';
+
+  try{
+    // Simulate payment processing delay
+    await new Promise(r=>setTimeout(r,1800));
+
+    // Simulate 5% decline rate
+    if(Math.random()<0.05){
+      throw new Error('Payment declined by issuer. Please try a different payment method.');
+    }
+
+    const user=JSON.parse(localStorage.getItem('knra_user')||'{}');
+    if(!user||!user.id)throw new Error('Session expired. Please log in again.');
+
+    // Ensure user exists in public.users
+    await ensureUserExists(user);
+
+    // Generate all IDs and values
+    const accountRef  = genAccountRef();
+    const txnId       = generateTxnId();
+    const paymentRef  = buildPaymentRef();
+    const loginNum    = genLoginNumber();
+    const loginPass   = genPassword();
+    const amount      = parseFloat(challenge.price)||0;
+    const accountSize = parseMoney(challenge.accountSize);
+    const profitTarget= parseMoney(challenge.profitTarget)||accountSize*0.50;
+    const maxDrawdown = parseMoney(challenge.maxDrawdown)||accountSize*0.08;
+    const now         = new Date().toISOString();
+    const today       = new Date().toISOString().split('T')[0];
+
+    // ── INSERT ACCOUNT (exact columns from your DB) ──────────────────────────
+    // Columns: id(auto), user_id, account_ref, type(enum), size, phase,
+    //          platform, server, login, start_date, end_date, profit_target,
+    //          drawdown_limit, status, created_at, breach_reason, tier,
+    //          login_id, txn_id
+    let accountId=null;
+
+    try{
+      const accountRows=await supabaseRequest('/accounts',{
+        method:'POST',
+        body:JSON.stringify({
+          user_id      : user.id,
+          account_ref  : accountRef,
+          type         : 'challenge',
+          size         : accountSize,
+          phase        : 'phase_1',
+          platform     : 'MT5',
+          server       : 'KNRA-Live',
+          login        : String(loginNum),
+          start_date   : today,
+          profit_target: profitTarget,
+          drawdown_limit: maxDrawdown,
+          status       : 'active',
+          created_at   : now,
+          tier         : challenge.tier||'standard',
+          login_id     : String(loginNum),
+          txn_id       : txnId
+        })
+      });
+
+      if(Array.isArray(accountRows)&&accountRows.length>0){
+        accountId=accountRows[0].id;
+        console.log('✅ Account created, id:',accountId);
+      }
+    }catch(e){
+      console.error('❌ Account insert failed:',e.message);
+      throw new Error('Could not create trading account: '+e.message);
+    }
+
+    // ── INSERT account_credentials if trigger didn't fire ────────────────────
+    let credsFromTrigger=false;
+    if(accountId){
+      try{
+        await new Promise(r=>setTimeout(r,500)); // wait for trigger
+        const credRows=await supabaseRequest(`/account_credentials?account_id=eq.${accountId}&select=login_number,login_password`);
+        if(Array.isArray(credRows)&&credRows.length>0&&credRows[0].login_number){
+          console.log('✅ Credentials from trigger:',credRows[0].login_number);
+          credsFromTrigger=true;
+          // Use trigger-generated values for display
+        }
+      }catch(e){
+        console.warn('Could not check trigger credentials:',e.message);
+      }
+
+      if(!credsFromTrigger){
+        console.warn('Trigger did not fire — inserting credentials manually');
+        try{
+          await supabaseRequest('/account_credentials',{
+            method:'POST',
+            headers:{'Prefer':'return=minimal'},
+            body:JSON.stringify({
+              account_id      : accountId,
+              user_id         : user.id,
+              login_number    : loginNum,
+              login_password  : loginPass,
+              balance         : accountSize,
+              starting_balance: accountSize,
+              peak_balance    : accountSize,
+              profit_loss     : 0,
+              last_balance_update: now
+            })
+          });
+          console.log('✅ Credentials inserted manually');
+        }catch(e){
+          console.warn('Manual credential insert failed (non-fatal):',e.message);
+        }
+      }
+    }
+
+    // ── INSERT TRANSACTION ───────────────────────────────────────────────────
+    try{
+      await supabaseRequest('/transactions',{
+        method:'POST',
+        headers:{'Prefer':'return=minimal'},
+        body:JSON.stringify({
+          user_id       : user.id,
+          account_id    : accountId||null,
+          type          : 'purchase',
+          amount        : amount,
+          status        : 'completed',
+          payment_ref   : paymentRef,
+          reference     : txnId,
+          name          : challenge.name||'Challenge Purchase',
+          method        : activeMethod,
+          challenge_tier: challenge.tier||'standard',
+          challenge_size: accountSize,
+          is_credit     : false,
+          created_at    : now
+        })
+      });
+      console.log('✅ Transaction recorded');
+    }catch(e){
+      console.warn('Transaction insert failed (non-fatal):',e.message);
+    }
+
+    // ── INSERT account_performance ───────────────────────────────────────────
+    try{
+      await supabaseRequest('/account_performance',{
+        method:'POST',
+        headers:{'Prefer':'return=minimal'},
+        body:JSON.stringify({
+          account_id      : accountId||null,
+          current_balance : accountSize,
+          starting_balance: accountSize,
+          peak_balance    : accountSize,
+          profit_loss     : 0,
+          trading_days    : 0,
+          profitable_days : 0,
+          recorded_at     : now
+        })
+      });
+      console.log('✅ Performance seeded');
+    }catch(e){
+      console.warn('Performance insert failed (non-fatal):',e.message);
+    }
+
+    // ── SHOW SUCCESS ─────────────────────────────────────────────────────────
+    showSuccess(loginNum,loginPass,accountRef,txnId,amount);
+
+  }catch(e){
+    console.error('Payment error:',e.message);
+    showAlert(e.message||'Payment failed. Please try again.','error');
+    btn.classList.remove('loading');
+    btn.disabled=false;
+  }
+}
+</script>
+</body>
+</html>

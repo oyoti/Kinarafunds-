@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Create Account — KNRA Funded</title>
+<link rel="icon" href="data:,">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+:root{--white:#ffffff;--off-white:#f8f7f4;--cream:#f2ede6;--charcoal:#1a1a1a;--mid:#4a4a4a;--light:#888888;--gold:#b8860b;--gold-light:#d4a017;--gold-pale:#fdf6e3;--accent:#c9a84c;--border:#e8e1d6;--green:#1a7a4a;--red:#c0392b;--error:#fef2f2;--error-text:#c0392b;}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'DM Sans',sans-serif;background:var(--off-white);color:var(--charcoal);min-height:100vh;}
+.auth-wrapper{display:flex;min-height:100vh;width:100%;}
+.auth-left{flex:1;background:var(--charcoal);display:flex;flex-direction:column;justify-content:space-between;padding:3rem;position:relative;overflow:hidden;}
+.auth-left::before{content:'FUNDED';position:absolute;font-family:'Playfair Display',serif;font-size:12rem;font-weight:900;color:rgba(255,255,255,0.03);bottom:-1rem;left:-1rem;line-height:1;pointer-events:none;white-space:nowrap;}
+.auth-left::after{content:'';position:absolute;top:-80px;right:-80px;width:450px;height:450px;background:radial-gradient(circle,rgba(184,134,11,0.15) 0%,transparent 70%);border-radius:50%;pointer-events:none;}
+.left-logo{font-family:'Playfair Display',serif;font-size:1.6rem;font-weight:900;color:var(--white);text-decoration:none;z-index:1;}
+.left-logo span{color:var(--gold);}
+.left-content{z-index:1;}
+.left-content h2{font-family:'Playfair Display',serif;font-size:2.2rem;font-weight:900;color:var(--white);line-height:1.1;margin-bottom:1rem;}
+.left-content h2 em{color:var(--gold);font-style:normal;}
+.left-content p{font-size:0.93rem;color:rgba(255,255,255,0.5);line-height:1.75;max-width:360px;font-weight:300;}
+.perks{display:flex;flex-direction:column;gap:0.8rem;z-index:1;}
+.perk{display:flex;align-items:center;gap:0.75rem;font-size:0.85rem;color:rgba(255,255,255,0.65);}
+.perk-icon{background:rgba(184,134,11,0.2);color:var(--gold);width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.85rem;flex-shrink:0;}
+.auth-right{flex:0 0 520px;background:var(--white);display:flex;align-items:center;justify-content:center;padding:3rem 3rem;min-height:100vh;overflow-y:auto;}
+.auth-box{width:100%;max-width:420px;padding:1rem 0;}
+.auth-box h1{font-family:'Playfair Display',serif;font-size:1.9rem;font-weight:900;color:var(--charcoal);margin-bottom:0.4rem;}
+.auth-box .subtitle{font-size:0.9rem;color:var(--light);margin-bottom:2rem;font-weight:300;}
+.auth-box .subtitle a{color:var(--gold);text-decoration:none;font-weight:600;}
+.form-row-2{display:grid;grid-template-columns:1fr 1fr;gap:1rem;}
+.form-group{margin-bottom:1.1rem;}
+.form-group label{display:block;font-size:0.82rem;font-weight:600;color:var(--mid);margin-bottom:0.45rem;letter-spacing:0.3px;}
+.form-group input,.form-group select{width:100%;padding:0.78rem 1rem;border:1.5px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:0.9rem;color:var(--charcoal);background:var(--off-white);transition:all 0.2s;outline:none;appearance:none;}
+.form-group input:focus,.form-group select:focus{border-color:var(--gold);background:var(--white);box-shadow:0 0 0 3px rgba(184,134,11,0.08);}
+.form-group input.error,.form-group select.error{border-color:var(--red);background:var(--error);}
+.form-group input:read-only{background:var(--cream);color:var(--mid);cursor:not-allowed;}
+.field-error{font-size:0.76rem;color:var(--error-text);margin-top:0.3rem;display:none;}
+.field-error.show{display:block;}
+.field-hint{font-size:0.76rem;color:var(--green);margin-top:0.3rem;display:none;}
+.field-hint.show{display:block;}
+.password-wrap{position:relative;}
+.password-wrap input{padding-right:2.8rem;}
+.toggle-pass{position:absolute;right:0.9rem;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--light);font-size:1rem;padding:0;}
+.toggle-pass:hover{color:var(--gold);}
+.strength-bar{height:4px;border-radius:2px;background:var(--border);margin-top:0.5rem;overflow:hidden;}
+.strength-fill{height:100%;border-radius:2px;transition:width 0.3s,background 0.3s;width:0;}
+.strength-label{font-size:0.74rem;color:var(--light);margin-top:0.25rem;}
+.terms-row{display:flex;align-items:flex-start;gap:0.6rem;margin:1.2rem 0;}
+.terms-row input[type=checkbox]{accent-color:var(--gold);width:15px;height:15px;flex-shrink:0;margin-top:2px;}
+.terms-row span{font-size:0.82rem;color:var(--mid);line-height:1.5;}
+.terms-row a{color:var(--gold);text-decoration:none;font-weight:600;}
+.btn-submit{width:100%;padding:0.95rem;background:var(--charcoal);color:var(--white);border:none;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:0.95rem;font-weight:700;cursor:pointer;transition:all 0.2s;}
+.btn-submit:hover{background:var(--gold);}
+.btn-submit:disabled{opacity:0.6;cursor:not-allowed;}
+.btn-submit .spinner{display:none;width:18px;height:18px;border:2px solid rgba(255,255,255,0.3);border-top-color:white;border-radius:50%;animation:spin 0.7s linear infinite;margin:0 auto;}
+.btn-submit.loading .btn-text{display:none;}
+.btn-submit.loading .spinner{display:block;}
+.alert{padding:0.9rem 1rem;border-radius:8px;font-size:0.86rem;margin-bottom:1.2rem;display:none;line-height:1.5;}
+.alert.show{display:block;}
+.alert.error{background:var(--error);color:var(--error-text);border:1px solid #f5c6cb;}
+.alert.success{background:#e8f5ed;color:var(--green);border:1px solid #c3e6cb;}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.auth-box{animation:fadeUp 0.5s ease both;}
+@media(max-width:960px){.auth-left{display:none;}.auth-right{flex:1;}}
+@media(max-width:480px){.auth-right{padding:2rem 1.5rem;}.form-row-2{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+<div class="auth-wrapper">
+
+  <div class="auth-left">
+    <a href="index.html" class="left-logo">KNRA<span>.</span>FUNDED</a>
+    <div class="left-content">
+      <h2>Join Africa's<br/><em>Digit Prop Firm</em></h2>
+      <p>Create your account in under 2 minutes. Start your first challenge for as little as $5 and unlock a funded trading account.</p>
+    </div>
+    <div class="perks">
+      <div class="perk"><div class="perk-icon">✓</div>Entry from just $5</div>
+      <div class="perk"><div class="perk-icon">✓</div>80% profit split on funded accounts</div>
+      <div class="perk"><div class="perk-icon">✓</div>24-hour payout processing</div>
+      <div class="perk"><div class="perk-icon">✓</div>Trade KNRA1–KNRA7 24/7</div>
+    </div>
+  </div>
+
+  <div class="auth-right">
+    <div class="auth-box">
+      <h1>Create Account</h1>
+      <p class="subtitle">Already have an account? <a href="login.html">Log in</a></p>
+
+      <div class="alert" id="alertBox"></div>
+
+      <form id="signupForm" novalidate>
+        <div class="form-row-2">
+          <div class="form-group">
+            <label for="firstName">First Name</label>
+            <input type="text" id="firstName" placeholder="Brian" autocomplete="given-name"/>
+            <div class="field-error" id="firstNameErr">First name is required.</div>
+          </div>
+          <div class="form-group">
+            <label for="lastName">Last Name</label>
+            <input type="text" id="lastName" placeholder="Mutua" autocomplete="family-name"/>
+            <div class="field-error" id="lastNameErr">Last name is required.</div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="email">Email Address</label>
+          <input type="email" id="email" placeholder="you@example.com" autocomplete="email"/>
+          <div class="field-error" id="emailErr">Please enter a valid email address.</div>
+        </div>
+
+        <div class="form-group">
+          <label for="phone">Phone Number (for M-Pesa payouts)</label>
+          <input type="tel" id="phone" placeholder="+254 7XX XXX XXX" autocomplete="tel"/>
+          <div class="field-error" id="phoneErr">Please enter a valid phone number.</div>
+        </div>
+
+        <div class="form-group">
+          <label for="country">Country</label>
+          <select id="country">
+            <option value="">Select your country…</option>
+            <option value="KE" selected>Kenya</option>
+            <option value="UG">Uganda</option>
+            <option value="TZ">Tanzania</option>
+            <option value="RW">Rwanda</option>
+            <option value="NG">Nigeria</option>
+            <option value="GH">Ghana</option>
+            <option value="ZA">South Africa</option>
+            <option value="OTHER">Other</option>
+          </select>
+          <div class="field-error" id="countryErr">Please select your country.</div>
+        </div>
+
+        <div class="form-group" id="referralGroup" style="display:none;">
+          <label for="referralCodeInput">Referral Code</label>
+          <input type="text" id="referralCodeInput" readonly/>
+          <div class="field-hint show" id="referralHint">✓ Referral applied — you were invited by a KNRA trader!</div>
+        </div>
+
+        <div class="form-group">
+          <label for="password">Password</label>
+          <div class="password-wrap">
+            <input type="password" id="password" placeholder="Create a strong password" autocomplete="new-password"/>
+            <button type="button" class="toggle-pass" id="togglePass1">👁</button>
+          </div>
+          <div class="strength-bar"><div class="strength-fill" id="strengthFill"></div></div>
+          <div class="strength-label" id="strengthLabel">Enter a password</div>
+          <div class="field-error" id="passwordErr">Password must be at least 8 characters.</div>
+        </div>
+
+        <div class="form-group">
+          <label for="confirmPassword">Confirm Password</label>
+          <div class="password-wrap">
+            <input type="password" id="confirmPassword" placeholder="Repeat your password" autocomplete="new-password"/>
+            <button type="button" class="toggle-pass" id="togglePass2">👁</button>
+          </div>
+          <div class="field-error" id="confirmPasswordErr">Passwords do not match.</div>
+        </div>
+
+        <div class="terms-row">
+          <input type="checkbox" id="terms"/>
+          <span>I agree to the <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>. I understand digit trading involves risk.</span>
+        </div>
+        <div class="field-error" id="termsErr" style="margin-top:-0.8rem;margin-bottom:0.8rem;">You must accept the terms to continue.</div>
+
+        <button type="submit" class="btn-submit" id="submitBtn">
+          <span class="btn-text">Create Account →</span>
+          <div class="spinner"></div>
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─── CONFIG ───────────────────────────────────────────────────────────────────
+const SUPABASE_URL  = 'https://hhkztoklgeozegehcsmc.supabase.co';
+const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhoa3p0b2tsZ2VvemVnZWhjc21jIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAyMjI1MjEsImV4cCI6MjA5NTc5ODUyMX0.fWs-vU_gIXLNJUh1DA1edrqKh7tc3wv9hjT-ZhhjytY';
+// ─────────────────────────────────────────────────────────────────────────────
+
+const form      = document.getElementById('signupForm');
+const submitBtn = document.getElementById('submitBtn');
+const alertBox  = document.getElementById('alertBox');
+
+// ─── Capture referral code from URL ────────────────────────────────────────────
+const urlParams   = new URLSearchParams(window.location.search);
+const refFromUrl  = (urlParams.get('ref') || '').trim().toUpperCase();
+
+if (refFromUrl) {
+  document.getElementById('referralGroup').style.display = 'block';
+  document.getElementById('referralCodeInput').value = refFromUrl;
+}
+
+function showAlert(msg, type = 'error') {
+  alertBox.textContent = msg;
+  alertBox.className   = 'alert show ' + type;
+  alertBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function validate(id, errId, fn, errMsg) {
+  const el  = document.getElementById(id);
+  const err = document.getElementById(errId);
+  const ok  = fn(el.value);
+  el.classList.toggle('error', !ok);
+  if (err) { if (errMsg) err.textContent = errMsg; err.classList.toggle('show', !ok); }
+  return ok;
+}
+
+// Password strength meter
+document.getElementById('password').addEventListener('input', function () {
+  const v     = this.value;
+  const fill  = document.getElementById('strengthFill');
+  const label = document.getElementById('strengthLabel');
+  let score   = 0;
+  if (v.length >= 8)          score++;
+  if (/[A-Z]/.test(v))        score++;
+  if (/[0-9]/.test(v))        score++;
+  if (/[^A-Za-z0-9]/.test(v)) score++;
+  const colors = ['#e74c3c','#e67e22','#f1c40f','#1a7a4a'];
+  const labels = ['Weak','Fair','Good','Strong'];
+  fill.style.width      = (score * 25) + '%';
+  fill.style.background = colors[score - 1] || '#e8e1d6';
+  label.textContent     = score ? labels[score - 1] : 'Enter a password';
+});
+
+// Toggle password visibility
+document.getElementById('togglePass1').addEventListener('click', () => {
+  const inp = document.getElementById('password');
+  inp.type  = inp.type === 'password' ? 'text' : 'password';
+});
+document.getElementById('togglePass2').addEventListener('click', () => {
+  const inp = document.getElementById('confirmPassword');
+  inp.type  = inp.type === 'password' ? 'text' : 'password';
+});
+
+// ─── FORM SUBMIT ──────────────────────────────────────────────────────────────
+// NOTE: public.users, public.referral_codes, and public.referrals are all
+// created server-side by the on_auth_user_created_referral trigger on
+// auth.users (SECURITY DEFINER, bypasses RLS). The client only needs to
+// call /auth/v1/signup and pass along first_name/last_name/phone/country/
+// role/ref_code as user metadata — the trigger reads that metadata and
+// does the rest atomically. This removes the old race condition where
+// the referral insert was silently dropped by RLS.
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  alertBox.className = 'alert';
+
+  const ok = [
+    validate('firstName',       'firstNameErr',       v => v.trim().length > 0),
+    validate('lastName',        'lastNameErr',        v => v.trim().length > 0),
+    validate('email',           'emailErr',           v => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim())),
+    validate('phone',           'phoneErr',           v => v.trim().length >= 7),
+    validate('country',         'countryErr',         v => v !== ''),
+    validate('password',        'passwordErr',        v => v.length >= 8),
+    validate('confirmPassword', 'confirmPasswordErr', v => v === document.getElementById('password').value, 'Passwords do not match.'),
+  ].every(Boolean);
+
+  const termsChecked = document.getElementById('terms').checked;
+  document.getElementById('termsErr').classList.toggle('show', !termsChecked);
+  if (!ok || !termsChecked) return;
+
+  // Collect values
+  const firstName = document.getElementById('firstName').value.trim();
+  const lastName  = document.getElementById('lastName').value.trim();
+  const fullName  = `${firstName} ${lastName}`;
+  const email     = document.getElementById('email').value.trim();
+  const phone     = document.getElementById('phone').value.trim();
+  const country   = document.getElementById('country').value;
+  const password  = document.getElementById('password').value;
+
+  submitBtn.classList.add('loading');
+  submitBtn.disabled = true;
+
+  try {
+    // ── Sign up with Supabase Auth. Pass referral code + profile fields
+    //    as metadata so the on_auth_user_created_referral trigger can
+    //    create public.users / referral_codes / referrals server-side. ──
+    const authRes = await fetch(`${SUPABASE_URL}/auth/v1/signup`, {
+      method:  'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey':        SUPABASE_ANON,
+      },
+      body: JSON.stringify({
+        email,
+        password,
+        data: {
+          first_name: firstName,
+          last_name:  lastName,
+          name:       fullName,
+          phone:      phone,
+          country:    country,
+          role:       'trader',
+          ref_code:   refFromUrl || null,
+        },
+      }),
+    });
+
+    const authData = await authRes.json();
+
+    if (!authRes.ok) {
+      const msg = authData.error_description || authData.msg || authData.message || 'Signup failed.';
+      throw new Error(msg);
+    }
+
+    // ── Email confirmation required (no access_token returned) ───────────────
+    if (!authData.access_token) {
+      showAlert('✅ Account created! Check your email to confirm, then log in.', 'success');
+      setTimeout(() => { window.location.href = 'login.html'; }, 3500);
+      return;
+    }
+
+    // ── Instant login (email confirmation OFF) ───────────────────────────────
+    const token  = authData.access_token;
+    const userId = authData.user.id;
+
+    // Save session to localStorage
+    localStorage.setItem('knra_token',   token);
+    localStorage.setItem('knra_refresh', authData.refresh_token);
+    localStorage.setItem('knra_user', JSON.stringify({
+      id:      userId,
+      name:    fullName,
+      email:   email,
+      phone:   phone,
+      country: country,
+      role:    'trader',
+    }));
+
+    showAlert('✅ Account created! Redirecting to your dashboard…', 'success');
+    setTimeout(() => { window.location.href = 'dashboard.html'; }, 1800);
+
+  } catch (err) {
+    console.error('Signup error:', err);
+    showAlert(err.message || 'Something went wrong. Please try again.');
+  } finally {
+    submitBtn.classList.remove('loading');
+    submitBtn.disabled = false;
+  }
+});
+</script>
+</body>
+</html>

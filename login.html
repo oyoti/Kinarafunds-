@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Login — KNRA Funded</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+:root{--white:#ffffff;--off-white:#f8f7f4;--charcoal:#1a1a1a;--mid:#4a4a4a;--light:#888888;--gold:#b8860b;--gold-light:#d4a017;--gold-pale:#fdf6e3;--border:#e8e1d6;--green:#1a7a4a;--red:#c0392b;--error:#fef2f2;}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'DM Sans',sans-serif;background:var(--off-white);color:var(--charcoal);min-height:100vh;display:flex;}
+.auth-wrapper{display:flex;width:100%;min-height:100vh;}
+.auth-left{flex:1;background:var(--charcoal);display:flex;flex-direction:column;justify-content:space-between;padding:3rem;position:relative;overflow:hidden;}
+.auth-left::before{content:'KNRA';position:absolute;font-family:'Playfair Display',serif;font-size:18rem;font-weight:900;color:rgba(255,255,255,0.03);bottom:-2rem;left:-2rem;line-height:1;pointer-events:none;}
+.auth-left::after{content:'';position:absolute;top:-100px;right:-100px;width:500px;height:500px;background:radial-gradient(circle,rgba(184,134,11,0.12) 0%,transparent 70%);border-radius:50%;pointer-events:none;}
+.left-logo{font-family:'Playfair Display',serif;font-size:1.6rem;font-weight:900;color:var(--white);text-decoration:none;z-index:1;}
+.left-logo span{color:var(--gold);}
+.left-content{z-index:1;}
+.left-content h2{font-family:'Playfair Display',serif;font-size:2.4rem;font-weight:900;color:var(--white);line-height:1.1;margin-bottom:1rem;}
+.left-content h2 em{color:var(--gold);font-style:normal;}
+.left-content p{font-size:0.95rem;color:rgba(255,255,255,0.5);line-height:1.75;max-width:360px;font-weight:300;}
+.left-stats{display:flex;gap:2.5rem;z-index:1;}
+.left-stat .num{font-family:'Playfair Display',serif;font-size:1.8rem;font-weight:700;color:var(--white);}
+.left-stat .lbl{font-size:0.75rem;color:rgba(255,255,255,0.35);margin-top:2px;}
+.auth-right{flex:0 0 480px;background:var(--white);display:flex;align-items:center;justify-content:center;padding:3rem;min-height:100vh;}
+.auth-box{width:100%;max-width:380px;}
+.auth-box h1{font-family:'Playfair Display',serif;font-size:2rem;font-weight:900;color:var(--charcoal);margin-bottom:0.4rem;}
+.auth-box .subtitle{font-size:0.9rem;color:var(--light);margin-bottom:2.5rem;font-weight:300;}
+.auth-box .subtitle a{color:var(--gold);text-decoration:none;font-weight:600;}
+.form-group{margin-bottom:1.25rem;}
+.form-group label{display:block;font-size:0.82rem;font-weight:600;color:var(--mid);margin-bottom:0.5rem;letter-spacing:0.3px;}
+.form-group input{width:100%;padding:0.8rem 1rem;border:1.5px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:0.93rem;color:var(--charcoal);background:var(--off-white);transition:all 0.2s;outline:none;}
+.form-group input:focus{border-color:var(--gold);background:var(--white);box-shadow:0 0 0 3px rgba(184,134,11,0.08);}
+.form-group input.error{border-color:var(--red);background:var(--error);}
+.field-error{font-size:0.78rem;color:var(--red);margin-top:0.35rem;display:none;}
+.field-error.show{display:block;}
+.form-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;}
+.remember{display:flex;align-items:center;gap:0.5rem;cursor:pointer;}
+.remember input[type=checkbox]{accent-color:var(--gold);width:15px;height:15px;}
+.remember span{font-size:0.83rem;color:var(--mid);}
+.forgot-link{font-size:0.83rem;color:var(--gold);text-decoration:none;font-weight:600;}
+.btn-submit{width:100%;padding:0.95rem;background:var(--charcoal);color:var(--white);border:none;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:0.95rem;font-weight:700;cursor:pointer;transition:all 0.2s;}
+.btn-submit:hover{background:var(--gold);}
+.btn-submit:disabled{opacity:0.6;cursor:not-allowed;}
+.btn-submit .spinner{display:none;width:18px;height:18px;border:2px solid rgba(255,255,255,0.3);border-top-color:white;border-radius:50%;animation:spin 0.7s linear infinite;margin:0 auto;}
+.btn-submit.loading .btn-text{display:none;}
+.btn-submit.loading .spinner{display:block;}
+.alert{padding:0.9rem 1rem;border-radius:8px;font-size:0.86rem;margin-bottom:1.5rem;display:none;}
+.alert.show{display:block;}
+.alert.error{background:var(--error);color:var(--red);border:1px solid #f5c6cb;}
+.alert.success{background:#e8f5ed;color:var(--green);border:1px solid #c3e6cb;}
+.divider{display:flex;align-items:center;gap:1rem;margin:1.5rem 0;color:var(--light);font-size:0.8rem;}
+.divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--border);}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.auth-box{animation:fadeUp 0.5s ease both;}
+@media(max-width:900px){.auth-left{display:none;}.auth-right{flex:1;}}
+</style>
+</head>
+<body>
+<div class="auth-wrapper">
+  <div class="auth-left">
+    <a href="#" class="left-logo">KNRA<span>.</span>FUNDED</a>
+    <div class="left-content">
+      <h2>Trade Digits.<br/><em>Get Funded.</em><br/>Keep 80%.</h2>
+      <p>Access your KNRA challenge dashboard and track your progress toward a fully funded digit trading account.</p>
+    </div>
+    <div class="left-stats">
+      <div class="left-stat"><div class="num">80%</div><div class="lbl">Profit Split</div></div>
+      <div class="left-stat"><div class="num">24hr</div><div class="lbl">Payouts</div></div>
+      <div class="left-stat"><div class="num">7</div><div class="lbl">Indices</div></div>
+    </div>
+  </div>
+  <div class="auth-right">
+    <div class="auth-box">
+      <h1>Welcome Back</h1>
+      <p class="subtitle">Don't have an account? <a href="signup.html">Sign up free</a></p>
+      <div class="alert" id="alertBox"></div>
+      <form id="loginForm" novalidate>
+        <div class="form-group">
+          <label for="email">Email Address</label>
+          <input type="email" id="email" placeholder="you@example.com" autocomplete="email"/>
+          <div class="field-error" id="emailErr">Please enter a valid email address.</div>
+        </div>
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input type="password" id="password" placeholder="••••••••" autocomplete="current-password"/>
+          <div class="field-error" id="passwordErr">Password is required.</div>
+        </div>
+        <div class="form-row">
+          <label class="remember">
+            <input type="checkbox" id="remember"/>
+            <span>Remember me</span>
+          </label>
+          <a href="forgot-password.html" class="forgot-link">Forgot password?</a>
+        </div>
+        <button type="submit" class="btn-submit" id="submitBtn">
+          <span class="btn-text">Log In →</span>
+          <div class="spinner"></div>
+        </button>
+      </form>
+      <div class="divider">or</div>
+      <p style="text-align:center;font-size:0.85rem;color:var(--light);">
+        New trader? <a href="signup.html" style="color:var(--gold);font-weight:600;text-decoration:none;">Create your account →</a>
+      </p>
+    </div>
+  </div>
+</div>
+<script src="config.js"></script>
+<script>
+// If already logged in, skip login page
+if (localStorage.getItem('knra_token')) {
+  window.location.href = 'dashboard.html';
+}
+
+const form      = document.getElementById('loginForm');
+const submitBtn = document.getElementById('submitBtn');
+const alertBox  = document.getElementById('alertBox');
+
+function showAlert(msg, type = 'error') {
+  alertBox.textContent = msg;
+  alertBox.className = 'alert show ' + type;
+}
+function hideAlert() { alertBox.className = 'alert'; }
+
+function validateField(id, errId, validator) {
+  const input = document.getElementById(id);
+  const err   = document.getElementById(errId);
+  const valid = validator(input.value);
+  input.classList.toggle('error', !valid);
+  err.classList.toggle('show', !valid);
+  return valid;
+}
+
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  hideAlert();
+
+  const emailOk = validateField('email',    'emailErr',    v => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim()));
+  const passOk  = validateField('password', 'passwordErr', v => v.length > 0);
+  if (!emailOk || !passOk) return;
+
+  submitBtn.classList.add('loading');
+  submitBtn.disabled = true;
+
+  try {
+
+    // ── FIXED: API.login() uses BASE_URL + /auth/v1/token (correct) ──────────
+    // Old code used API.post() which used REST_URL → wrong URL → 404
+    // ─────────────────────────────────────────────────────────────────────────
+    const data = await API.login(
+      document.getElementById('email').value.trim(),
+      document.getElementById('password').value
+    );
+    // API.login() already saves knra_token, knra_refresh, knra_user
+    // to localStorage — no need to do it manually here
+
+    showAlert('Login successful! Redirecting…', 'success');
+    setTimeout(() => { window.location.href = 'dashboard.html'; }, 900);
+
+  } catch (err) {
+    showAlert(err.message || 'Invalid credentials. Please try again.');
+  } finally {
+    submitBtn.classList.remove('loading');
+    submitBtn.disabled = false;
+  }
+});
+
+['email', 'password'].forEach(id => {
+  document.getElementById(id).addEventListener('input', () => {
+    document.getElementById(id).classList.remove('error');
+  });
+});
+</script>
+</body>
+</html>

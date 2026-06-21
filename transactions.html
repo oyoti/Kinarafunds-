@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Transactions — KNRA Funded</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="shared.css"/>
+<style>
+.summary-row{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:2rem;}
+.sum-card{background:var(--white);border:1px solid var(--border);border-radius:12px;padding:1.1rem 1.3rem;}
+.sum-card .s-label{font-size:0.74rem;color:var(--light);font-weight:700;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:0.4rem;}
+.sum-card .s-val{font-family:'Playfair Display',serif;font-size:1.5rem;font-weight:700;}
+.sum-card .s-sub{font-size:0.76rem;color:var(--light);margin-top:0.2rem;}
+.filter-row{display:flex;gap:0.8rem;margin-bottom:1.4rem;align-items:center;flex-wrap:wrap;}
+.filter-row select,.filter-row input{padding:0.5rem 0.9rem;border:1.5px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:0.83rem;color:var(--charcoal);background:var(--white);outline:none;}
+.filter-row select:focus,.filter-row input:focus{border-color:var(--gold);}
+.filter-label{font-size:0.82rem;color:var(--mid);font-weight:600;}
+.export-btn{margin-left:auto;padding:0.5rem 1.2rem;background:var(--charcoal);color:white;border:none;border-radius:8px;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;transition:0.2s;}
+.export-btn:hover{background:var(--gold);color:black;}
+.table-wrap{background:var(--white);border:1px solid var(--border);border-radius:14px;overflow:hidden;}
+.table-scroll{overflow-x:auto;}
+.table-wrap table{width:100%;border-collapse:collapse;}
+.table-wrap th{padding:0.85rem 1.2rem;font-size:0.74rem;font-weight:700;color:var(--light);text-transform:uppercase;letter-spacing:0.5px;border-bottom:2px solid var(--border);text-align:left;background:var(--off-white);white-space:nowrap;}
+.table-wrap td{padding:0.95rem 1.2rem;font-size:0.86rem;border-bottom:1px solid var(--border);vertical-align:middle;white-space:nowrap;}
+.table-wrap tr:last-child td{border-bottom:none;}
+.table-wrap tr:hover td{background:#fafaf8;}
+.tx-row{display:flex;align-items:center;gap:0.8rem;}
+.tx-icon{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;}
+.tx-name{font-weight:600;font-size:0.86rem;}
+.tx-id{font-size:0.74rem;color:var(--light);}
+.amount-pos{color:var(--green);font-weight:700;}
+.amount-neg{color:var(--red);font-weight:700;}
+.cell-muted{color:var(--light);font-size:0.8rem;}
+.pagination{display:flex;justify-content:space-between;align-items:center;padding:1rem 1.2rem;border-top:1px solid var(--border);font-size:0.82rem;color:var(--light);}
+.page-btns{display:flex;gap:0.4rem;}
+.page-btn{width:32px;height:32px;border-radius:6px;border:1.5px solid var(--border);background:var(--white);cursor:pointer;font-size:0.82rem;font-family:'DM Sans',sans-serif;transition:0.18s;}
+.page-btn:hover,.page-btn.active{background:var(--charcoal);color:white;border-color:var(--charcoal);}
+.pill{padding:3px 10px;border-radius:20px;font-size:0.72rem;font-weight:700;display:inline-block;}
+.pill-green{background:#e8f5ed;color:var(--green);}
+.pill-gold{background:#fdf6e3;color:var(--gold);}
+.pill-red{background:#fef2f2;color:var(--red);}
+</style>
+</head>
+<body>
+<div class="layout">
+  <aside class="sidebar" id="sidebar"></aside>
+  <main class="main">
+    <div class="topbar">
+      <div class="topbar-title">Billing History</div>
+      <div style="font-size:0.85rem;color:var(--mid);" id="txCount"></div>
+    </div>
+    <div class="content">
+
+      <!-- Summary -->
+      <div class="summary-row" id="summaryRow">
+        <div class="sum-card"><div class="s-label">Total Paid In</div><div class="s-val skeleton" style="width:80px;height:24px;"></div></div>
+        <div class="sum-card"><div class="s-label">Total Paid Out</div><div class="s-val skeleton" style="width:80px;height:24px;"></div></div>
+        <div class="sum-card"><div class="s-label">Referral Earned</div><div class="s-val skeleton" style="width:80px;height:24px;"></div></div>
+        <div class="sum-card"><div class="s-label">Net Balance</div><div class="s-val skeleton" style="width:80px;height:24px;"></div></div>
+      </div>
+
+      <!-- Filters -->
+      <div class="filter-row">
+        <span class="filter-label">Filter:</span>
+        <select id="typeFilter" onchange="applyFilters()">
+          <option value="">All Types</option>
+          <option value="payout">Payout</option>
+          <option value="purchase">Purchase</option>
+          <option value="referral">Referral</option>
+        </select>
+        <select id="statusFilter" onchange="applyFilters()">
+          <option value="">All Status</option>
+          <option value="Completed">Completed</option>
+          <option value="Pending">Pending</option>
+          <option value="Failed">Failed</option>
+        </select>
+        <input type="month" id="monthFilter" onchange="applyFilters()"/>
+        <button class="export-btn" onclick="exportCSV()">⬇ Export CSV</button>
+      </div>
+
+      <!-- Table -->
+      <div class="table-wrap">
+        <div class="table-scroll">
+        <table>
+          <thead id="txHead"></thead>
+          <tbody id="txBody"><tr><td class="empty-state">Loading…</td></tr></tbody>
+        </table>
+        </div>
+        <div class="pagination">
+          <span id="pageInfo"></span>
+          <div class="page-btns" id="pageBtns"></div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<script src="config.js"></script>
+<script src="sidebar.js"></script>
+<script>
+requireAuth();
+renderSidebar('transactions');
+
+const SUPA_URL = 'https://hhkztoklgeozegehcsmc.supabase.co';
+const ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhoa3p0b2tsZ2VvemVnZWhjc21jIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAyMjI1MjEsImV4cCI6MjA5NTc5ODUyMX0.fWs-vU_gIXLNJUh1DA1edrqKh7tc3wv9hjT-ZhhjytY';
+
+async function dbGet(path) {
+  const token = localStorage.getItem('knra_token') || ANON_KEY;
+  const res = await fetch(`${SUPA_URL}/rest/v1${path}`, {
+    headers: { 'apikey': ANON_KEY, 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
+  });
+  if (!res.ok) { const e = await res.json().catch(()=>({})); throw new Error(e.message || `HTTP ${res.status}`); }
+  return res.json();
+}
+
+// Read ?acc= param to pre-filter by account
+const urlParams  = new URLSearchParams(window.location.search);
+const preAccount = urlParams.get('acc') || '';
+
+let currentUser = null;
+let allTx    = [];
+let filtered = [];
+const PAGE_SIZE = 10;
+let currentPage = 1;
+
+const typeIcons = { payout: '💰', purchase: '🛒', referral: '🎁' };
+const typeBg    = { payout: '#e8f5ed', purchase: '#fef2f2', referral: '#fdf6e3' };
+
+/* Columns shown, in order — everything from the `transactions` table
+   EXCEPT id, account_id, is_credit (those stay internal-only). */
+const COLUMNS = [
+  { key: 'type',            label: 'Type'            },
+  { key: 'name',            label: 'Transaction'     },
+  { key: 'created_at',      label: 'Date',   fmt: 'date'   },
+  { key: 'method',         label: 'Method'          },
+  { key: 'payment_method',  label: 'Payment Method'  },
+  { key: 'amount',          label: 'Amount', fmt: 'amount' },
+  { key: 'currency',        label: 'Currency'        },
+  { key: 'status',          label: 'Status', fmt: 'status' },
+  { key: 'reference',       label: 'Reference'       },
+  { key: 'payment_ref',     label: 'Payment Ref'     },
+  { key: 'transaction_id',  label: 'Transaction ID'  },
+  { key: 'challenge_tier',  label: 'Challenge Tier'  },
+  { key: 'challenge_size',  label: 'Challenge Size'  },
+  { key: 'user_id',         label: 'User ID'         },
+];
+
+function fmtMoney(n, currency) {
+  if (n == null || isNaN(n)) return '—';
+  const symbol = (currency || 'USD').toUpperCase() === 'USD' ? '$' : (currency || '') + ' ';
+  return symbol + Math.abs(parseFloat(n)).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+function fmtDate(iso) {
+  if (!iso) return '—';
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return iso;
+  return d.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+}
+
+function statusClass(s) {
+  const v = (s || '').toLowerCase();
+  if (v === 'completed') return 'pill-green';
+  return 'pill-red'; // pending, failed, or anything else
+}
+
+async function loadTransactions() {
+  currentUser = JSON.parse(localStorage.getItem('knra_user') || '{}');
+  if (!currentUser?.id) { window.location.href = 'login.html'; return; }
+
+  try {
+    let path = `/transactions?user_id=eq.${currentUser.id}&select=*&order=created_at.desc`;
+    if (preAccount) path += `&account_id=eq.${encodeURIComponent(preAccount)}`;
+
+    allTx = await dbGet(path);
+    renderSummary(allTx);
+    applyFilters();
+  } catch (err) {
+    document.getElementById('txBody').innerHTML = `<tr><td class="empty-state">⚠ ${err.message}</td></tr>`;
+  }
+}
+
+function renderSummary(rows) {
+  let paidIn = 0, paidOut = 0, referral = 0, net = 0;
+
+  rows.forEach(t => {
+    const amt = parseFloat(t.amount) || 0;
+    const isCredit = !!t.is_credit;
+
+    net += isCredit ? amt : -amt;
+
+    if (t.type === 'purchase') paidIn += amt;
+    if (t.type === 'payout')   paidOut += amt;
+    if (t.type === 'referral') referral += amt;
+  });
+
+  document.getElementById('summaryRow').innerHTML = `
+    <div class="sum-card"><div class="s-label">Total Paid In</div><div class="s-val">${fmtMoney(paidIn)}</div><div class="s-sub">Challenge fees</div></div>
+    <div class="sum-card"><div class="s-label">Total Paid Out</div><div class="s-val" style="color:var(--green)">${fmtMoney(paidOut)}</div><div class="s-sub">Profit payouts</div></div>
+    <div class="sum-card"><div class="s-label">Referral Earned</div><div class="s-val" style="color:var(--gold)">${fmtMoney(referral)}</div></div>
+    <div class="sum-card"><div class="s-label">Net Balance</div><div class="s-val" style="color:${net < 0 ? 'var(--red)' : 'var(--charcoal)'}">${net < 0 ? '-' : ''}${fmtMoney(net)}</div><div class="s-sub">All time</div></div>
+  `;
+}
+
+function applyFilters() {
+  const type   = document.getElementById('typeFilter').value;
+  const status = document.getElementById('statusFilter').value;
+  const month  = document.getElementById('monthFilter').value; // "YYYY-MM"
+
+  filtered = allTx.filter(t => {
+    if (type   && t.type   !== type)   return false;
+    if (status && t.status !== status) return false;
+    if (month) {
+      const txMonth = (t.created_at || '').slice(0, 7); // "YYYY-MM"
+      if (txMonth !== month) return false;
+    }
+    return true;
+  });
+
+  currentPage = 1;
+  renderPage();
+}
+
+function renderHead() {
+  document.getElementById('txHead').innerHTML =
+    `<tr>${COLUMNS.map(c => `<th>${c.label}</th>`).join('')}</tr>`;
+}
+
+function renderCell(t, col) {
+  const val = t[col.key];
+
+  if (col.key === 'type') {
+    return `<div class="tx-row">
+      <div class="tx-icon" style="background:${typeBg[val] || '#f1f5f9'}">${typeIcons[val] || '📄'}</div>
+      <span class="tx-name" style="text-transform:capitalize;">${val || '—'}</span>
+    </div>`;
+  }
+  if (col.fmt === 'date')   return fmtDate(val);
+  if (col.fmt === 'amount') {
+    const isCredit = !!t.is_credit;
+    const sign = isCredit ? '+' : '-';
+    const cls  = isCredit ? 'amount-pos' : 'amount-neg';
+    return `<span class="${cls}">${sign}${fmtMoney(val, t.currency)}</span>`;
+  }
+  if (col.fmt === 'status') {
+    return val ? `<span class="pill ${statusClass(val)}">${val}</span>` : '—';
+  }
+  if (val == null || val === '') return `<span class="cell-muted">—</span>`;
+  return val;
+}
+
+function renderPage() {
+  renderHead();
+
+  const start = (currentPage - 1) * PAGE_SIZE;
+  const page  = filtered.slice(start, start + PAGE_SIZE);
+  const total = filtered.length;
+
+  document.getElementById('txCount').textContent = `${total} transaction${total !== 1 ? 's' : ''}`;
+  document.getElementById('pageInfo').textContent = total
+    ? `Showing ${start + 1}–${Math.min(start + PAGE_SIZE, total)} of ${total}`
+    : 'No transactions';
+
+  if (!page.length) {
+    document.getElementById('txBody').innerHTML =
+      `<tr><td class="empty-state">No transactions match the selected filters.</td></tr>`;
+    document.getElementById('pageBtns').innerHTML = '';
+    return;
+  }
+
+  document.getElementById('txBody').innerHTML = page.map(t => `
+    <tr>${COLUMNS.map(c => `<td>${renderCell(t, c)}</td>`).join('')}</tr>
+  `).join('');
+
+  // Pagination buttons
+  const totalPages = Math.ceil(total / PAGE_SIZE);
+  let btns = `<button class="page-btn" onclick="goPage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>‹</button>`;
+  for (let p = 1; p <= totalPages; p++) {
+    btns += `<button class="page-btn ${p === currentPage ? 'active' : ''}" onclick="goPage(${p})">${p}</button>`;
+  }
+  btns += `<button class="page-btn" onclick="goPage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}>›</button>`;
+  document.getElementById('pageBtns').innerHTML = btns;
+}
+
+function goPage(p) {
+  const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
+  if (p < 1 || p > totalPages) return;
+  currentPage = p;
+  renderPage();
+}
+
+function exportCSV() {
+  if (!filtered.length) { alert('No data to export.'); return; }
+  const headers = COLUMNS.map(c => c.label).concat(['Is Credit']);
+  const rows    = filtered.map(t => COLUMNS.map(c => t[c.key]).concat([t.is_credit ? 'Credit' : 'Debit']));
+  const csv     = [headers, ...rows].map(r => r.map(c => `"${c ?? ''}"`).join(',')).join('\n');
+  const a       = document.createElement('a');
+  a.href        = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+  a.download    = 'knra-transactions.csv';
+  a.click();
+}
+
+loadTransactions();
+</script>
+</body>
+</html>
