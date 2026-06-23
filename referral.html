@@ -578,6 +578,8 @@
 <div class="toast" id="toast"></div>
 
 <script>
+  console.log('🟢 referral.html script loaded');
+  
   const SUPA_URL = 'https://hhkztoklgeozegehcsmc.supabase.co';
   const ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhoa3p0b2tsZ2VvemVnZWhjc21jIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAyMjI1MjEsImV4cCI6MjA5NTc5ODUyMX0.fWs-vU_gIXLNJUh1DA1edrqKh7tc3wv9hjT-ZhhjytY';
 
@@ -638,9 +640,12 @@
   }
 
   async function loadReferral() {
+    console.log('🟡 loadReferral() called');
     try {
       // 1. Get logged-in user
+      console.log('🔵 Getting user from localStorage');
       const user = JSON.parse(localStorage.getItem('knra_user') || '{}');
+      console.log('🔵 User:', user);
       if (!user || !user.id) { window.location.href = 'login.html'; return; }
 
       const name = `${user.first_name || ''} ${user.last_name || ''}`.trim() || user.email || 'Trader';
@@ -718,6 +723,7 @@
     window.open(`https://wa.me/?text=${msg}`, '_blank');
   }
 
+  console.log('🟠 About to call loadReferral()');
   loadReferral();
 </script>
 </body>
