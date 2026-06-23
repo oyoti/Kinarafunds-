@@ -175,16 +175,18 @@ body{font-family:'DM Sans',sans-serif;background:var(--off-white);color:var(--ch
 </div>
 
 <script>
+// ─── CONFIG ───────────────────────────────────────────────────────────────────
 const SUPABASE_URL  = 'https://hhkztoklgeozegehcsmc.supabase.co';
 const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhoa3p0b2tsZ2VvemVnZWhjc21jIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAyMjI1MjEsImV4cCI6MjA5NTc5ODUyMX0.fWs-vU_gIXLNJUh1DA1edrqKh7tc3wv9hjT-ZhhjytY';
+// ─────────────────────────────────────────────────────────────────────────────
 
 const form      = document.getElementById('signupForm');
 const submitBtn = document.getElementById('submitBtn');
 const alertBox  = document.getElementById('alertBox');
 
-// Capture referral code from URL
-const urlParams  = new URLSearchParams(window.location.search);
-const refFromUrl = (urlParams.get('ref') || '').trim().toUpperCase();
+// ─── Capture referral code from URL ────────────────────────────────────────────
+const urlParams   = new URLSearchParams(window.location.search);
+const refFromUrl  = (urlParams.get('ref') || '').trim().toUpperCase();
 
 if (refFromUrl) {
   document.getElementById('referralGroup').style.display = 'block';
@@ -210,6 +212,7 @@ function generateReferralCode() {
   return 'KNRA-' + Math.random().toString(36).substring(2, 10).toUpperCase();
 }
 
+// ─── REST helper for Supabase (using the signed-up user's own access token) ───
 async function supaFetch(path, options = {}, token = null) {
   return fetch(`${SUPABASE_URL}/rest/v1${path}`, {
     ...options,
@@ -239,6 +242,7 @@ document.getElementById('password').addEventListener('input', function () {
   label.textContent     = score ? labels[score - 1] : 'Enter a password';
 });
 
+// Toggle password visibility
 document.getElementById('togglePass1').addEventListener('click', () => {
   const inp = document.getElementById('password');
   inp.type  = inp.type === 'password' ? 'text' : 'password';
@@ -248,6 +252,14 @@ document.getElementById('togglePass2').addEventListener('click', () => {
   inp.type  = inp.type === 'password' ? 'text' : 'password';
 });
 
+// ─── FORM SUBMIT ──────────────────────────────────────────────────────────────
+// NOTE: writes go directly from the client into public.users / referral_codes /
+// referrals. This is allowed by scoped RLS INSERT policies (auth.uid() must
+// match the row being written), and the referrals table has a BEFORE INSERT
+// trigger (enforce_referral_integrity) that overwrites referrer_user_id /
+// commission_percentage / is_influencer from the real referral_codes row
+// server-side — so even though the client sends these fields, they can't be
+// tampered with. uses_count on referral_codes auto-increments via trigger too.
 form.addEventListener('submit', async (e) => {
   e.preventDefault();
   alertBox.className = 'alert';
@@ -266,35 +278,27 @@ form.addEventListener('submit', async (e) => {
   document.getElementById('termsErr').classList.toggle('show', !termsChecked);
   if (!ok || !termsChecked) return;
 
-  const firstName      = document.getElementById('firstName').value.trim();
-  const lastName       = document.getElementById('lastName').value.trim();
-  const fullName       = `${firstName} ${lastName}`;
-  const email          = document.getElementById('email').value.trim();
-  const phone          = document.getElementById('phone').value.trim();
-  const country        = document.getElementById('country').value;
-  const password       = document.getElementById('password').value;
-  const newReferralCode = generateReferralCode();
+  const firstName       = document.getElementById('firstName').value.trim();
+  const lastName        = document.getElementById('lastName').value.trim();
+  const fullName        = `${firstName} ${lastName}`;
+  const email            = document.getElementById('email').value.trim();
+  const phone             = document.getElementById('phone').value.trim();
+  const country          = document.getElementById('country').value;
+  const password         = document.getElementById('password').value;
+  const newReferralCode  = generateReferralCode();
 
   submitBtn.classList.add('loading');
   submitBtn.disabled = true;
 
   try {
-    // STEP 1: Create auth user — include ref_code so the DB trigger can copy it into referred_by
+    // ── STEP 1: Create the auth user ──────────────────────────────────────
     const authRes = await fetch(`${SUPABASE_URL}/auth/v1/signup`, {
       method:  'POST',
       headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_ANON },
       body: JSON.stringify({
         email,
         password,
-        data: {
-          first_name: firstName,
-          last_name:  lastName,
-          name:       fullName,
-          phone,
-          country,
-          role:       'trader',
-          ref_code:   refFromUrl || null,   // ← KEY FIX: trigger reads this into referred_by
-        },
+        data: { first_name: firstName, last_name: lastName, name: fullName, phone, country, role: 'trader' },
       }),
     });
     const authData = await authRes.json();
@@ -317,24 +321,29 @@ form.addEventListener('submit', async (e) => {
       id: userId, name: fullName, email, phone, country, role: 'trader',
     }));
 
-    // STEP 2: Update the row the trigger already created — don't INSERT again
-    // The handle_new_auth_user trigger fires on auth.users INSERT and creates
-    // the public.users row. We just patch the referral_code here since the
-    // trigger generates a random one and we want to use our own.
-    await supaFetch(`/users?id=eq.${userId}`, {
-      method:  'PATCH',
+    // ── STEP 2: Write the profile row directly to public.users ─────────────
+    const userInsertRes = await supaFetch('/users', {
+      method:  'POST',
       headers: { 'Prefer': 'return=minimal' },
       body: JSON.stringify({
+        id:            userId,
         first_name:    firstName,
         last_name:     lastName,
+        email,
         phone,
         country,
+        role:          'trader',
         referral_code: newReferralCode,
         referred_by:   refFromUrl || null,
       }),
     }, token);
 
-    // STEP 3: Give the new user their own referral code to share
+    if (!userInsertRes.ok) {
+      const errBody = await userInsertRes.json().catch(() => ({}));
+      console.error('public.users insert failed:', errBody);
+    }
+
+    // ── STEP 3: Give the new user their own referral code to share ─────────
     const codeInsertRes = await supaFetch('/referral_codes', {
       method:  'POST',
       headers: { 'Prefer': 'return=minimal' },
@@ -352,7 +361,7 @@ form.addEventListener('submit', async (e) => {
       console.error('referral_codes insert failed:', errBody);
     }
 
-    // STEP 4: If signed up via referral link, create the referral relationship
+    // ── STEP 4: If they signed up via a referral link, link it ─────────────
     if (refFromUrl) {
       try {
         const lookupRes = await supaFetch(
@@ -387,6 +396,7 @@ form.addEventListener('submit', async (e) => {
               const errBody = await refInsertRes.json().catch(() => ({}));
               console.error('referrals insert failed:', errBody);
             }
+            // uses_count on the referrer's code is bumped automatically server-side
           }
         } else {
           console.warn('Referral code not found or inactive:', refFromUrl);
