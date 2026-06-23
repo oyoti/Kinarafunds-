@@ -660,7 +660,6 @@
       if (!refCode) {
         document.getElementById('refCode').textContent = 'No code assigned';
         document.getElementById('refLink').value = 'Contact support to get your referral code';
-        document.getElementById('referralBody').innerHTML = '<tr><td colspan="6" class="empty-state">No referral code assigned to your account yet.</td></tr>';
         document.getElementById('statTotal').textContent     = '0';
         document.getElementById('statConverted').textContent = '0';
         document.getElementById('statEarned').textContent    = '0';
@@ -674,19 +673,24 @@
       document.getElementById('refCode').textContent = refCode;
       document.getElementById('refLink').value = currentRefLink;
 
-      // 3. Read stats directly from referral_stats (one row per user)
+      // 3. Fetch stats from referral_stats table
+      console.log('Fetching stats for user:', user.id);
       const statsRows = await dbGet(`/referral_stats?user_id=eq.${user.id}&select=total_referrals,converted,total_earned,pending`);
+      console.log('Stats rows:', statsRows);
       const stats = statsRows[0] || {};
+      console.log('Stats object:', stats);
 
       const totalReferrals = parseInt(stats.total_referrals) || 0;
       const convertedAmt   = parseFloat(stats.converted) || 0;
       const totalEarned    = parseFloat(stats.total_earned) || 0;
       const pendingAmt     = parseFloat(stats.pending) || 0;
 
+      console.log('totalReferrals:', totalReferrals, 'convertedAmt:', convertedAmt, 'totalEarned:', totalEarned, 'pendingAmt:', pendingAmt);
+
       document.getElementById('statTotal').textContent     = totalReferrals > 0 ? totalReferrals : '0';
-      document.getElementById('statConverted').textContent = convertedAmt > 0 ? fmtMoney(convertedAmt) : '0';
-      document.getElementById('statEarned').textContent    = totalEarned > 0 ? fmtMoney(totalEarned) : '0';
-      document.getElementById('statPending').textContent   = pendingAmt > 0 ? fmtMoney(pendingAmt) : '0';
+      document.getElementById('statConverted').textContent = convertedAmt > 0 ? fmtMoney(convertedAmt) : '$0.00';
+      document.getElementById('statEarned').textContent    = totalEarned > 0 ? fmtMoney(totalEarned) : '$0.00';
+      document.getElementById('statPending').textContent   = pendingAmt > 0 ? pendingAmt : '0';
 
     } catch (err) {
       console.error('Referral page error:', err);
