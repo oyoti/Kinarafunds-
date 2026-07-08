@@ -46,6 +46,18 @@ body{font-family:'DM Sans',sans-serif;background:var(--off-white);color:var(--ch
 .rule-item{display:flex;align-items:flex-start;gap:0.6rem;font-size:0.82rem;color:var(--mid);}
 .rule-dot{width:6px;height:6px;border-radius:50%;background:var(--gold);flex-shrink:0;margin-top:5px;}
 
+/* ── Payment method selector ── */
+.method-toggle{display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;margin-bottom:1.5rem;}
+.method-card{
+  border:1.5px solid var(--border);border-radius:12px;
+  padding:1rem 1.1rem;cursor:pointer;transition:all 0.15s;
+  display:flex;flex-direction:column;gap:0.3rem;background:var(--white);
+}
+.method-card:hover{border-color:var(--gold-light);}
+.method-card.selected{border-color:var(--gold);background:var(--gold-pale);}
+.method-card .m-title{font-weight:700;font-size:0.92rem;display:flex;align-items:center;gap:0.5rem;}
+.method-card .m-sub{font-size:0.75rem;color:var(--light);}
+
 /* ── Payment section ── */
 .pay-method-info{
   background:var(--gold-pale);
@@ -74,6 +86,19 @@ body{font-family:'DM Sans',sans-serif;background:var(--off-white);color:var(--ch
 .kes-amount .kes-lbl{font-size:0.82rem;color:var(--light);font-weight:600;}
 .kes-amount .kes-val{font-family:'Playfair Display',serif;font-size:1.5rem;font-weight:900;color:var(--charcoal);}
 .kes-amount .kes-rate{font-size:0.72rem;color:var(--light);margin-top:2px;}
+
+.usd-amount{
+  background:var(--off-white);
+  border:1.5px solid var(--border);
+  border-radius:10px;
+  padding:1rem 1.25rem;
+  margin-bottom:1.5rem;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+.usd-amount .usd-lbl{font-size:0.82rem;color:var(--light);font-weight:600;}
+.usd-amount .usd-val{font-family:'Playfair Display',serif;font-size:1.5rem;font-weight:900;color:var(--charcoal);}
 
 .btn-pay{
   width:100%;padding:1rem;
@@ -140,24 +165,36 @@ body{font-family:'DM Sans',sans-serif;background:var(--off-white);color:var(--ch
 
         <div class="alert" id="alertBox"></div>
 
+        <!-- Payment method selector -->
+        <div class="method-toggle">
+          <div class="method-card selected" id="methodPesapal" onclick="selectMethod('pesapal')">
+            <div class="m-title">📱 Pesapal</div>
+            <div class="m-sub">M-Pesa, card, bank — KES</div>
+          </div>
+          <div class="method-card" id="methodWhop" onclick="selectMethod('whop')">
+            <div class="m-title">💳 Whop</div>
+            <div class="m-sub">Card, global payment — USD</div>
+          </div>
+        </div>
+
         <!-- How it works -->
         <div class="steps-note">
-          <div class="steps-note-item"><div class="steps-note-num">1</div><span>Click the button below — you'll be taken to Pesapal's secure payment page.</span></div>
-          <div class="steps-note-item"><div class="steps-note-num">2</div><span>Pay via M-Pesa, card, or bank — Pesapal supports all of them.</span></div>
+          <div class="steps-note-item"><div class="steps-note-num">1</div><span>Click the button below — you'll be taken to a secure payment page.</span></div>
+          <div class="steps-note-item"><div class="steps-note-num">2</div><span id="stepNote2">Pay via M-Pesa, card, or bank — Pesapal supports all of them.</span></div>
           <div class="steps-note-item"><div class="steps-note-num">3</div><span>After payment you'll be brought back here with your trading account credentials ready.</span></div>
         </div>
 
         <!-- Payment method info -->
         <div class="pay-method-info">
-          <div class="pay-method-icon">🔒</div>
+          <div class="pay-method-icon" id="payMethodIcon">🔒</div>
           <div class="pay-method-text">
-            <h4>Secure Payment via Pesapal</h4>
-            <p>You'll be redirected to Pesapal's hosted payment page. Pay with M-Pesa, Visa, Mastercard, or bank transfer. Your account is created automatically once payment is confirmed.</p>
+            <h4 id="payMethodTitle">Secure Payment via Pesapal</h4>
+            <p id="payMethodDesc">You'll be redirected to Pesapal's hosted payment page. Pay with M-Pesa, Visa, Mastercard, or bank transfer. Your account is created automatically once payment is confirmed.</p>
           </div>
         </div>
 
-        <!-- KES amount -->
-        <div class="kes-amount">
+        <!-- KES amount (Pesapal) -->
+        <div class="kes-amount" id="kesAmountBox">
           <div>
             <div class="kes-lbl">Amount Due (KES)</div>
             <div class="kes-rate">1 USD = 130 KES</div>
@@ -168,11 +205,17 @@ body{font-family:'DM Sans',sans-serif;background:var(--off-white);color:var(--ch
           </div>
         </div>
 
+        <!-- USD amount (Whop) -->
+        <div class="usd-amount" id="usdAmountBox" style="display:none;">
+          <div class="usd-lbl">Amount Due (USD)</div>
+          <div class="usd-val" id="usdAmount">—</div>
+        </div>
+
         <button class="btn-pay" id="payBtn" onclick="startPayment()">
-          <span class="btn-text">Pay with Pesapal →</span>
+          <span class="btn-text" id="payBtnText">Pay with Pesapal →</span>
           <div class="spinner"></div>
         </button>
-        <p class="secure-note">🔒 Payments processed securely by Pesapal</p>
+        <p class="secure-note">🔒 Payments processed securely</p>
 
       </div>
     </div>
@@ -227,6 +270,8 @@ const KES_PRICES = {
   'knra-pro-200':     26000,
 };
 
+let selectedMethod = 'pesapal';
+
 // Auth guard
 const _user = JSON.parse(localStorage.getItem('knra_user') || 'null');
 const _token = localStorage.getItem('knra_token');
@@ -250,6 +295,32 @@ document.getElementById('sumPrice').textContent  = '$' + challenge.price;
 const kes = KES_PRICES[challenge.id] || (challenge.price * USD_TO_KES);
 document.getElementById('kesAmount').textContent = 'KES ' + kes.toLocaleString();
 document.getElementById('usdEquiv').textContent  = '≈ $' + challenge.price + ' USD';
+document.getElementById('usdAmount').textContent = '$' + challenge.price;
+
+function selectMethod(method) {
+  selectedMethod = method;
+  document.getElementById('methodPesapal').classList.toggle('selected', method === 'pesapal');
+  document.getElementById('methodWhop').classList.toggle('selected', method === 'whop');
+
+  if (method === 'pesapal') {
+    document.getElementById('kesAmountBox').style.display = 'flex';
+    document.getElementById('usdAmountBox').style.display = 'none';
+    document.getElementById('payMethodIcon').textContent = '🔒';
+    document.getElementById('payMethodTitle').textContent = 'Secure Payment via Pesapal';
+    document.getElementById('payMethodDesc').textContent = "You'll be redirected to Pesapal's hosted payment page. Pay with M-Pesa, Visa, Mastercard, or bank transfer. Your account is created automatically once payment is confirmed.";
+    document.getElementById('stepNote2').textContent = 'Pay via M-Pesa, card, or bank — Pesapal supports all of them.';
+    document.getElementById('payBtnText').textContent = 'Pay with Pesapal →';
+  } else {
+    document.getElementById('kesAmountBox').style.display = 'none';
+    document.getElementById('usdAmountBox').style.display = 'flex';
+    document.getElementById('payMethodIcon').textContent = '💳';
+    document.getElementById('payMethodTitle').textContent = 'Secure Payment via Whop';
+    document.getElementById('payMethodDesc').textContent = "You'll be redirected to Whop's hosted checkout page. Pay by card in USD. Your account is created automatically once payment is confirmed.";
+    document.getElementById('stepNote2').textContent = 'Pay by card via Whop — fast global checkout.';
+    document.getElementById('payBtnText').textContent = 'Pay with Whop →';
+  }
+  document.getElementById('alertBox').className = 'alert';
+}
 
 function showAlert(msg, type = 'error') {
   const b = document.getElementById('alertBox');
@@ -264,8 +335,10 @@ async function startPayment() {
   btn.disabled = true;
   document.getElementById('alertBox').className = 'alert';
 
+  const endpoint = selectedMethod === 'whop' ? 'whop-checkout' : 'pesapal-checkout';
+
   try {
-    const res = await fetch(`${SUPABASE_URL}/functions/v1/pesapal-checkout`, {
+    const res = await fetch(`${SUPABASE_URL}/functions/v1/${endpoint}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -290,11 +363,13 @@ async function startPayment() {
       throw new Error(data.error || data.message || 'Could not start payment. Please try again.');
     }
 
-    // Save the tracking ID so the callback page can poll status
-    sessionStorage.setItem('knra_order_tracking_id', data.order_tracking_id);
+    // Save tracking refs so the callback page can poll status
+    if (data.order_tracking_id) sessionStorage.setItem('knra_order_tracking_id', data.order_tracking_id);
+    if (data.checkout_id) sessionStorage.setItem('knra_checkout_id', data.checkout_id);
     sessionStorage.setItem('knra_merchant_ref', data.merchant_ref);
+    sessionStorage.setItem('knra_payment_method', selectedMethod);
 
-    // Redirect user to Pesapal payment page
+    // Redirect user to the hosted payment page
     window.location.href = data.redirect_url;
 
   } catch (err) {
