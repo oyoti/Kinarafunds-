@@ -57,6 +57,75 @@
   }
   .wordmark span{ color:var(--gold); letter-spacing:0.42em; }
 
+  /* ---------- brought by BEX ---------- */
+  .brought-by{
+    position:absolute;
+    top:calc(5vh + 26px); left:50%;
+    transform:translateX(-50%);
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    padding:7px 18px;
+    background:#0B1F3A;
+    border-radius:999px;
+    box-shadow:0 6px 18px -4px rgba(11,31,58,0.55), 0 0 0 1px rgba(11,31,58,0.9);
+    opacity:0;
+    animation:fadeDown 1s ease forwards 0.4s, glow 2.6s ease-in-out infinite 1.6s;
+  }
+  .brought-by span{
+    font-family:'JetBrains Mono', monospace;
+    font-size:10.5px;
+    letter-spacing:0.18em;
+    text-transform:uppercase;
+    color:#9FB4D4;
+  }
+  .brought-by b{
+    font-family:'Inter', sans-serif;
+    font-size:12px;
+    font-weight:700;
+    letter-spacing:0.1em;
+    color:#FFFFFF;
+  }
+  @keyframes glow{
+    0%, 100%{ box-shadow:0 6px 18px -4px rgba(11,31,58,0.55), 0 0 0 1px rgba(11,31,58,0.9); }
+    50%{ box-shadow:0 6px 26px -2px rgba(11,31,58,0.85), 0 0 0 3px rgba(11,31,58,0.25); }
+  }
+
+  /* ---------- dashboard button ---------- */
+  .dash-btn{
+    position:fixed;
+    top:28px; left:28px;
+    z-index:10;
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    padding:11px 20px;
+    background:var(--bg-panel);
+    border:1px solid var(--line-gold);
+    border-radius:999px;
+    color:var(--ink);
+    text-decoration:none;
+    font-family:'Inter', sans-serif;
+    font-size:13px;
+    font-weight:600;
+    letter-spacing:0.01em;
+    box-shadow:0 6px 18px -8px rgba(21,20,15,0.18);
+    opacity:0;
+    animation:fadeDown 0.9s ease forwards 0.15s;
+    transition:transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  }
+  .dash-btn:hover{
+    transform:translateY(-1px);
+    border-color:var(--gold);
+    box-shadow:0 10px 24px -10px rgba(21,20,15,0.28);
+  }
+  .dash-btn svg{ width:14px; height:14px; }
+
+  @media (max-width:640px){
+    .dash-btn{ top:16px; left:16px; padding:9px 16px; font-size:12px; }
+    .brought-by{ top:calc(5vh + 24px); padding:6px 14px; }
+  }
+
   /* ---------- animated chart ---------- */
   .chart-wrap{
     position:absolute;
@@ -258,7 +327,14 @@
 
 <div class="stage">
 
+  <a href="dashboard.html" class="dash-btn">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+    Back to Dashboard
+  </a>
+
   <div class="wordmark">KNRA <span>FUNDED</span></div>
+
+  <div class="brought-by"><span>Brought to you by</span> <b>BEX</b></div>
 
   <div class="chart-wrap" aria-hidden="true">
     <svg viewBox="0 0 1100 340" preserveAspectRatio="none">
