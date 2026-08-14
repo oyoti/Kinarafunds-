@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>KNRA Funded — Free Competitions Coming Soon</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -94,17 +94,20 @@
   /* ---------- dashboard button ---------- */
   .dash-btn{
     position:fixed;
-    top:28px; left:28px;
+    top:calc(28px + env(safe-area-inset-top, 0px));
+    left:calc(28px + env(safe-area-inset-left, 0px));
     z-index:10;
     display:inline-flex;
     align-items:center;
     gap:8px;
+    max-width:calc(100vw - 56px - env(safe-area-inset-left, 0px));
     padding:11px 20px;
     background:var(--bg-panel);
     border:1px solid var(--line-gold);
     border-radius:999px;
     color:var(--ink);
     text-decoration:none;
+    white-space:nowrap;
     font-family:'Inter', sans-serif;
     font-size:13px;
     font-weight:600;
@@ -119,12 +122,26 @@
     border-color:var(--gold);
     box-shadow:0 10px 24px -10px rgba(21,20,15,0.28);
   }
-  .dash-btn svg{ width:14px; height:14px; }
+  .dash-btn svg{ width:14px; height:14px; flex-shrink:0; }
+  .dash-btn .full-label{ display:inline; }
+  .dash-btn .short-label{ display:none; }
 
   @media (max-width:640px){
-    .dash-btn{ top:16px; left:16px; padding:9px 16px; font-size:12px; }
+    .dash-btn{
+      top:calc(16px + env(safe-area-inset-top, 0px));
+      left:calc(16px + env(safe-area-inset-left, 0px));
+      padding:9px 14px; font-size:12px;
+      max-width:calc(100vw - 32px - env(safe-area-inset-left, 0px));
+      gap:6px;
+    }
     .brought-by{ top:calc(5vh + 24px); padding:6px 14px; }
   }
+
+  @media (max-width:380px){
+    .dash-btn .full-label{ display:none; }
+    .dash-btn .short-label{ display:inline; }
+  }
+
 
   /* ---------- animated chart ---------- */
   .chart-wrap{
@@ -329,7 +346,8 @@
 
   <a href="dashboard.html" class="dash-btn">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
-    Back to Dashboard
+    <span class="full-label">Back to Dashboard</span>
+    <span class="short-label">Dashboard</span>
   </a>
 
   <div class="wordmark">KNRA <span>FUNDED</span></div>
